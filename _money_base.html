@@ -1,0 +1,212 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ title or team.group.name }} · {{ team.group.name }}</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+{% block head %}{% endblock %}
+</head>
+<body>
+<div class="mm-layout">
+<header class="site-header">
+  <div class="wrap header-row">
+    <button type="button" class="mm-sidebar-toggle" id="mmSidebarToggle" aria-label="เปิดเมนู" aria-controls="mmSidebar" aria-expanded="false" {% if not current_user %}hidden{% endif %}>
+      <span></span><span></span><span></span>
+    </button>
+    <a class="brand" href="{{ url_for('home') }}">
+      <img src="{{ url_for('static', filename='eng-logo.png') }}" alt="คณะวิศวกรรมศาสตร์ ม.อุบลฯ">
+      <span class="brand-text">
+        <span class="brand-line1">คณะวิศวกรรมศาสตร์ มหาวิทยาลัยอุบลราชธานี</span>
+        <span class="brand-line2">1309102 การเขียนโปรแกรมคอมพิวเตอร์ · Computer Programming Project</span>
+      </span>
+    </a>
+    <div class="header-account">
+      {% if current_user %}
+        <span class="profile-trigger">👤 {{ current_user }}</span>
+        <form method="post" action="{{ url_for('page', name='page1') }}" class="logout-form">
+          <input type="hidden" name="action" value="logout">
+          <button class="header-logout" type="submit">ออกจากระบบ</button>
+        </form>
+      {% else %}
+        <a class="header-login" href="{{ url_for('page', name='page1') }}">เข้าสู่ระบบ</a>
+      {% endif %}
+      <span class="group-badge">{{ team.group.name }} · {{ team.group.section }}</span>
+    </div>
+  </div>
+</header>
+
+<div class="mm-content-row {{ 'has-sidebar' if current_user }}">
+  {% if current_user %}
+  <div class="mm-sidebar-backdrop" id="mmSidebarBackdrop"></div>
+  <aside class="mm-sidebar" id="mmSidebar">
+    <a class="mm-side-brand" href="{{ url_for('home') }}">
+      <img src="{{ url_for('static', filename='img/mate-login.png') }}" alt="น้อง Mate">
+      <span>
+        <strong>Money<span>Mate</span>♥</strong>
+        <small>จัดการเงิน...ให้ง่ายขึ้นในทุกวัน</small>
+      </span>
+    </a>
+
+    <nav class="mm-sidenav" aria-label="เมนูหลัก">
+      <a href="{{ url_for('home') }}" class="mm-sidenav-link {{ 'active' if request.path == '/' }}">
+        <span class="mm-sidenav-icon icon-home">⌂</span>
+        <span class="mm-sidenav-label"><strong>หน้าแรก</strong><small>Home</small></span>
+        <span class="mm-link-arrow">›</span>
+      </a>
+
+      <details class="mm-sidenav-group" {% if request.path in ['/page2','/page3','/page8'] %}open{% endif %}>
+        <summary><span class="mm-sidenav-icon icon-transaction">▰</span><span class="mm-sidenav-text">ธุรกรรม</span></summary>
+        <div class="mm-sidenav-sub">
+          <a href="{{ url_for('page', name='page2') }}" class="{{ 'active' if request.path == '/page2' }}"><span class="mm-sub-icon icon-dashboard">▥</span><span><strong>Dashboard</strong><small>ภาพรวมการเงิน</small></span></a>
+          <a href="{{ url_for('page', name='page3') }}" class="{{ 'active' if request.path == '/page3' }}"><span class="mm-sub-icon icon-money">↕</span><span><strong>รายรับ-รายจ่าย</strong><small>บันทึกรายการ</small></span></a>
+          <a href="{{ url_for('page', name='page8') }}" class="{{ 'active' if request.path == '/page8' }}"><span class="mm-sub-icon icon-smart">✚</span><span><strong>Smart Input</strong><small>บันทึกอัจฉริยะ</small></span></a>
+        </div>
+      </details>
+
+      <details class="mm-sidenav-group" {% if request.path in ['/page4','/page5','/page9'] %}open{% endif %}>
+        <summary><span class="mm-sidenav-icon icon-analysis">◔</span><span class="mm-sidenav-text">วิเคราะห์</span></summary>
+        <div class="mm-sidenav-sub">
+          <a href="{{ url_for('page', name='page4') }}" class="{{ 'active' if request.path == '/page4' }}"><span class="mm-sub-icon icon-chart">▥</span><span><strong>วิเคราะห์การเงิน</strong><small>ดูพฤติกรรมการใช้เงิน</small></span></a>
+          <a href="{{ url_for('page', name='page5') }}" class="{{ 'active' if request.path == '/page5' }}"><span class="mm-sub-icon icon-output">▣</span><span><strong>Smart Output</strong><small>สรุปผลอัตโนมัติ</small></span></a>
+          <a href="{{ url_for('page', name='page9') }}" class="{{ 'active' if request.path == '/page9' }}"><span class="mm-sub-icon icon-report">▤</span><span><strong>รายงาน</strong><small>รายงานสรุป</small></span></a>
+        </div>
+      </details>
+
+      <details class="mm-sidenav-group" {% if request.path in ['/page6','/page7','/page11'] %}open{% endif %}>
+        <summary><span class="mm-sidenav-icon icon-plan">◎</span><span class="mm-sidenav-text">แผนการเงิน</span></summary>
+        <div class="mm-sidenav-sub">
+          <a href="{{ url_for('page', name='page7') }}" class="{{ 'active' if request.path == '/page7' }}"><span class="mm-sub-icon icon-goal">⚑</span><span><strong>ตั้งเป้าหมาย</strong><small>วางแผนอนาคต</small></span></a>
+          <a href="{{ url_for('page', name='page6') }}" class="{{ 'active' if request.path == '/page6' }}"><span class="mm-sub-icon icon-calendar">▦</span><span><strong>แผนการใช้เงิน</strong><small>วางแผนรายเดือน</small></span></a>
+          <a href="{{ url_for('page', name='page11') }}" class="{{ 'active' if request.path == '/page11' }}"><span class="mm-sub-icon icon-sim">◈</span><span><strong>IF Simulator</strong><small>ทดลองสถานการณ์</small></span></a>
+        </div>
+      </details>
+
+      <details class="mm-sidenav-group" {% if request.path == '/team' or request.path == '/page1' %}open{% endif %}>
+        <summary><span class="mm-sidenav-icon icon-account">●</span><span class="mm-sidenav-text">บัญชี</span></summary>
+        <div class="mm-sidenav-sub">
+          <a href="{{ url_for('page', name='page1', view='profile') }}" class="{{ 'active' if request.path == '/page1' and request.args.get('view') == 'profile' }}"><span class="mm-sub-icon icon-setting">⚙</span><span><strong>{{ current_user }}</strong><small>บัญชีของคุณ</small></span></a>
+          <a href="{{ url_for('page', name='team') }}" class="{{ 'active' if request.path == '/team' }}"><span class="mm-sub-icon icon-team">♟</span><span><strong>ทีมผู้จัดทำ</strong><small>เกี่ยวกับเรา</small></span></a>
+          {% if is_admin %}<a href="{{ url_for('page', name='page10') }}" class="{{ 'active' if request.path == '/page10' }}"><span class="mm-sub-icon">🔐</span><span><strong>Admin</strong><small>จัดการระบบ</small></span></a>{% endif %}
+        </div>
+      </details>
+    </nav>
+
+    <section class="mm-side-mate" aria-label="พัฒนาการของน้อง Mate">
+      <div class="mm-side-speech">“บันทึกวันนี้<br>เพื่ออนาคตที่ดีกว่า<br>ไปด้วยกันนะ!” ♥</div>
+      <img src="{{ url_for('static', filename='img/mate-login.png') }}" alt="น้อง Mate ถือหัวใจ">
+      <div class="mm-side-level">
+        <div class="mm-level-title"><span>⚡</span><strong>Lv.{{ sidebar_savings.level }} {{ sidebar_savings.level_name }}</strong><b>{{ sidebar_savings.percent }}%</b></div>
+        <div class="mm-level-track"><i style="width: {{ sidebar_savings.percent }}%"></i></div>
+        {% if sidebar_savings.target_display != '0.00' and sidebar_savings.level < 5 %}
+          <small>อีก {{ sidebar_savings.amount_to_next_display }} บาท จะถึง Lv.{{ sidebar_savings.next_level }}</small>
+        {% elif sidebar_savings.level >= 5 %}
+          <small>ยอดเยี่ยม! คุณถึงระดับสูงสุดแล้ว</small>
+        {% else %}
+          <small>สร้างเป้าหมายเพื่อเริ่มพัฒนาน้อง Mate</small>
+        {% endif %}
+      </div>
+      <div class="mm-side-tagline"><strong>MoneyMate</strong><span>♥</span> ดูแลวันนี้...เพื่ออนาคตที่ดีกว่า</div>
+    </section>
+  </aside>
+  {% endif %}
+
+  <div class="mm-page {{ 'with-sidebar' if current_user }}">
+    <main class="wrap">
+      {% if msg %}<div class="banner">{{ msg }}</div>{% endif %}
+      {% if notice %}<div class="banner">{{ notice }}</div>{% endif %}
+      {% block content %}{% endblock %}
+    </main>
+
+    <footer class="site-footer">
+      <div class="wrap">
+        <span>{{ team.group.name }} — {{ team.group.topic }}</span>
+        <span class="members">
+          {% for m in team.members %}{{ m.name }}{% if not loop.last %} · {% endif %}{% endfor %}
+        </span>
+      </div>
+    </footer>
+  </div>
+</div>
+</div>
+<script src="{{ url_for('static', filename='js/motion.js') }}"></script>
+{% block scripts %}{% endblock %}
+<script>
+  // สลับเปิด/ปิดแถบเมนูด้านข้างบนจอมือถือ
+  document.addEventListener('DOMContentLoaded', function () {
+    const sidebar = document.getElementById('mmSidebar');
+    const toggle = document.getElementById('mmSidebarToggle');
+    const backdrop = document.getElementById('mmSidebarBackdrop');
+
+    if (!sidebar) return;
+
+    // Accordion จริง: เปิดได้ครั้งละหนึ่งหมวดเท่านั้น
+    const menuGroups = Array.from(sidebar.querySelectorAll('.mm-sidenav-group'));
+
+    function syncGroupState() {
+      menuGroups.forEach(function (group) {
+        const summary = group.querySelector(':scope > summary');
+        if (summary) summary.setAttribute('aria-expanded', group.open ? 'true' : 'false');
+      });
+    }
+
+    // ถ้า HTML มี open มากกว่าหนึ่งตัว ให้คงไว้เฉพาะหมวดแรก
+    let keptOpen = false;
+    menuGroups.forEach(function (group) {
+      if (group.open && !keptOpen) {
+        keptOpen = true;
+      } else if (group.open) {
+        group.open = false;
+      }
+
+      const summary = group.querySelector(':scope > summary');
+      if (!summary) return;
+
+      summary.addEventListener('click', function (event) {
+        event.preventDefault();
+        const shouldOpen = !group.open;
+
+        menuGroups.forEach(function (other) {
+          other.open = false;
+        });
+
+        group.open = shouldOpen;
+        syncGroupState();
+      });
+    });
+
+    syncGroupState();
+
+    function closeSidebar() {
+      sidebar.classList.remove('open');
+      if (backdrop) backdrop.classList.remove('show');
+      if (toggle) toggle.setAttribute('aria-expanded', 'false');
+    }
+
+    function openSidebar() {
+      sidebar.classList.add('open');
+      if (backdrop) backdrop.classList.add('show');
+      if (toggle) toggle.setAttribute('aria-expanded', 'true');
+    }
+
+    if (toggle) {
+      toggle.addEventListener('click', function () {
+        if (sidebar.classList.contains('open')) {
+          closeSidebar();
+        } else {
+          openSidebar();
+        }
+      });
+    }
+
+    if (backdrop) {
+      backdrop.addEventListener('click', closeSidebar);
+    }
+
+    sidebar.querySelectorAll('.mm-sidenav-link, .mm-sidenav-sub a').forEach(function (a) {
+      a.addEventListener('click', closeSidebar);
+    });
+  });
+</script>
+</body>
+</html>
