@@ -321,12 +321,69 @@ def security_headers(response):
 @app.context_processor
 def inject_security_globals():
 
+    current_user = session.get("user")
+    sidebar_savings = {
+        "level": 1,
+        "level_name": "เริ่มต้น",
+        "percent": 0,
+        "saved_display": "0.00",
+        "target_display": "0.00",
+        "amount_to_next_display": "0.00",
+        "next_level": 2,
+    }
+
+    if current_user:
+        goals = read_json("savings_data.json", [])
+        if not isinstance(goals, list):
+            goals = []
+
+        user_goals = [
+            goal for goal in goals
+            if isinstance(goal, dict)
+            and goal.get("owner") == current_user
+        ]
+
+        def _safe_money(value):
+            try:
+                return max(0.0, float(value or 0))
+            except (TypeError, ValueError):
+                return 0.0
+
+        total_saved = sum(_safe_money(goal.get("saved")) for goal in user_goals)
+        total_target = sum(_safe_money(goal.get("target")) for goal in user_goals)
+        percent = int(min(100, (total_saved / total_target) * 100)) if total_target else 0
+
+        if percent >= 80:
+            level, level_name, next_percent = 5, "แชมป์", 100
+        elif percent >= 60:
+            level, level_name, next_percent = 4, "นักสู้", 80
+        elif percent >= 40:
+            level, level_name, next_percent = 3, "มุ่งมั่น", 60
+        elif percent >= 20:
+            level, level_name, next_percent = 2, "สดใส", 40
+        else:
+            level, level_name, next_percent = 1, "เริ่มต้น", 20
+
+        next_amount = total_target * next_percent / 100 if total_target else 0.0
+        amount_to_next = max(0.0, next_amount - total_saved)
+
+        sidebar_savings = {
+            "level": level,
+            "level_name": level_name,
+            "percent": percent,
+            "saved_display": "{:,.2f}".format(total_saved),
+            "target_display": "{:,.2f}".format(total_target),
+            "amount_to_next_display": "{:,.2f}".format(amount_to_next),
+            "next_level": min(5, level + 1),
+        }
+
     return {
         "csrf_token": _csrf_token(),
-        "current_user": session.get("user"),
+        "current_user": current_user,
         "is_admin": bool(
             session.get("is_admin")
         ),
+        "sidebar_savings": sidebar_savings,
     }
 
 

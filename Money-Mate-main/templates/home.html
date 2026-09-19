@@ -1038,20 +1038,30 @@
   }
 
   .public-mate-zone {
-    min-height: 290px;
+    min-height: 410px;
+    padding-top: 120px;
+    align-items: flex-end;
   }
 
   .public-mate-character {
-    width: min(100%, 280px);
-    flex-basis: 280px;
+    width: min(100%, 270px);
+    flex: 0 0 270px;
   }
 
   .public-bubble {
-    top: 0;
-    right: 0;
-    max-width: 145px;
-    padding: 11px 13px;
-    font-size: 12px;
+    top: 10px;
+    right: 50%;
+    width: min(190px, 72%);
+    max-width: none;
+    padding: 13px 16px;
+    font-size: 13px;
+    transform: translateX(50%);
+    animation: none;
+  }
+
+  .public-bubble::after {
+    left: 50%;
+    transform: translateX(-50%) rotate(45deg);
   }
 
   .public-message-section {
