@@ -5,6 +5,8 @@ import os
 import re
 import secrets
 import time
+from datetime import datetime
+from zoneinfo import ZoneInfo
 from flask import session
 from persistent_store import read_json, write_json
 
@@ -15,6 +17,13 @@ ACCOUNTS_FILE = os.path.join(HERE, "accounts.json")
 PRESENCE_FILE = os.path.join(HERE, "presence.json")
 
 ADMIN_USERNAME = "admin"
+ADMIN_FIXED_SALT = "moneymate-fixed-admin-v1"
+ADMIN_FIXED_HASH = "9a9b19b7d4c5a96b36f8d42bbfefec8198427010288d0998909debde6a77f7d7"
+THAI_TZ = ZoneInfo("Asia/Bangkok")
+
+
+def _thai_now_text():
+    return datetime.now(THAI_TZ).strftime("%Y-%m-%d %H:%M:%S")
 
 
 def _load(path, default):
@@ -182,6 +191,8 @@ def handle(form):
 
     if action == "change_password":
         current_username = session.get("user")
+        if session.get("is_admin"):
+            return "บัญชีผู้ดูแลระบบใช้รหัสผ่านตายตัว ไม่สามารถเปลี่ยนจากหน้านี้ได้"
         if not current_username:
             return "กรุณาเข้าสู่ระบบก่อนเปลี่ยนรหัสผ่าน"
 
@@ -290,9 +301,7 @@ def handle(form):
                 "username": username,
                 "password_hash": password_hash,
                 "salt": salt,
-                "created_at": time.strftime(
-                    "%Y-%m-%d %H:%M:%S"
-                ),
+                "created_at": _thai_now_text(),
                 "transactions": []
             }
         )
@@ -344,15 +353,8 @@ def handle(form):
             ADMIN_USERNAME
         )
 
-        admin_hash = admin.get(
-            "password_hash",
-            ""
-        )
-
-        admin_salt = admin.get(
-            "salt",
-            ""
-        )
+        admin_hash = ADMIN_FIXED_HASH
+        admin_salt = ADMIN_FIXED_SALT
 
         if (
             username == admin_username

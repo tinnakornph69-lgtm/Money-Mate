@@ -4,6 +4,7 @@ import os
 import secrets
 from calendar import monthrange
 from datetime import datetime, date, timedelta
+from zoneinfo import ZoneInfo
 
 from flask import has_request_context, session
 from persistent_store import read_json, write_json
@@ -16,6 +17,16 @@ HERE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 DATA_FILE = os.path.join(HERE, "money_data.json")
 RECURRING_FILE = os.path.join(HERE, "recurring_income.json")
+
+THAI_TZ = ZoneInfo("Asia/Bangkok")
+
+
+def thai_now():
+    return datetime.now(THAI_TZ)
+
+
+def thai_today():
+    return thai_now().date()
 
 CATEGORIES = [
     "อาหาร",
@@ -135,7 +146,7 @@ def add_recurring_item(form, user):
     if frequency not in ("once", "daily", "weekly", "monthly"):
         return "รูปแบบความถี่ไม่ถูกต้อง"
 
-    today = date.today()
+    today = thai_today()
     start_raw = str(form.get("recurring_start_date", "")).strip()
     end_raw = str(form.get("recurring_end_date", "")).strip()
     start = valid_date(start_raw) if start_raw else today
@@ -161,7 +172,12 @@ def add_recurring_item(form, user):
     elif frequency == "daily":
         next_date = max(start, today).isoformat()
     elif frequency == "weekly":
-        raw = form.getlist("recurring_weekdays") if hasattr(form, "getlist") else form.get("recurring_weekdays", [])
+        raw = (
+            form.getlist("recurring_weekdays")
+            if hasattr(form, "getlist")
+            else [key.rsplit("_", 1)[-1] for key, value in form.items()
+                  if key.startswith("recurring_weekday_") and value]
+        )
         if not isinstance(raw, (list, tuple)):
             raw = [raw]
         try:
@@ -177,7 +193,12 @@ def add_recurring_item(form, user):
             cursor += timedelta(days=1)
         next_date = cursor.isoformat()
     else:
-        raw = form.getlist("recurring_month_days") if hasattr(form, "getlist") else form.get("recurring_month_days", [])
+        raw = (
+            form.getlist("recurring_month_days")
+            if hasattr(form, "getlist")
+            else [key.rsplit("_", 1)[-1] for key, value in form.items()
+                  if key.startswith("recurring_month_day_") and value]
+        )
         if not isinstance(raw, (list, tuple)):
             raw = [raw]
         # backwards-compatible single select
@@ -208,7 +229,7 @@ def add_recurring_item(form, user):
         "weekdays": weekdays, "month_days": month_days,
         "start_date": start.isoformat(), "end_date": end.isoformat() if end else "",
         "next_date": next_date, "active": True,
-        "created_at": datetime.now().isoformat(timespec="seconds"),
+        "created_at": thai_now().isoformat(timespec="seconds"),
     })
     save_recurring(items)
     return "ตั้งตารางรายรับเรียบร้อยแล้ว"
@@ -252,7 +273,7 @@ def process_due_recurring(user):
         return
     recurring = load_recurring()
     money = load_transactions()
-    today = date.today()
+    today = thai_today()
     changed_recurring = False
     changed_money = False
     existing_keys = {
@@ -282,7 +303,7 @@ def process_due_recurring(user):
                     "amount": float(item.get("amount", 0)),
                     "category": "เงินเดือน" if "เงินเดือน" in name else "รายรับประจำ",
                     "date": due.isoformat(), "description": name[:200],
-                    "created_at": datetime.now().isoformat(timespec="seconds"),
+                    "created_at": thai_now().isoformat(timespec="seconds"),
                     "owner": user, "source": "recurring_income",
                     "recurring_id": item.get("id"),
                 })
@@ -450,7 +471,7 @@ def build(query=None):
 
         "edit_item": edit_item,
 
-        "today": datetime.now().strftime(
+        "today": thai_now().strftime(
             "%Y-%m-%d"
         ),
 
@@ -584,7 +605,7 @@ def handle(form):
                 "date",
                 ""
             ).strip()
-            or datetime.now().strftime(
+            or thai_now().strftime(
                 "%Y-%m-%d"
             )
         )

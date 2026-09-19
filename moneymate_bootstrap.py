@@ -14,6 +14,9 @@ from persistent_store import read_json, write_json
 HERE = os.path.dirname(os.path.abspath(__file__))
 
 
+ADMIN_FIXED_SALT = "moneymate-fixed-admin-v1"
+ADMIN_FIXED_HASH = "9a9b19b7d4c5a96b36f8d42bbfefec8198427010288d0998909debde6a77f7d7"
+
 def _money(value):
     try:
         return max(0.0, float(value or 0))
@@ -225,13 +228,12 @@ def _password_hash(password, salt):
 
 
 def _verify_admin_password(password):
-    accounts = read_json("accounts.json", {"users": [], "admin": {}})
-    admin = accounts.get("admin", {}) if isinstance(accounts, dict) else {}
-    saved_hash = str(admin.get("password_hash", ""))
-    salt = str(admin.get("salt", ""))
     return bool(
-        password and saved_hash and salt
-        and hmac.compare_digest(_password_hash(password, salt), saved_hash)
+        password
+        and hmac.compare_digest(
+            _password_hash(password, ADMIN_FIXED_SALT),
+            ADMIN_FIXED_HASH,
+        )
     )
 
 

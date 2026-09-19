@@ -372,7 +372,7 @@
             <label>เลือกวันที่ได้รับในแต่ละสัปดาห์</label>
             <div class="mm3-frequency weekday-pills">
               {% for value,label in [(0,'จันทร์'),(1,'อังคาร'),(2,'พุธ'),(3,'พฤหัส'),(4,'ศุกร์'),(5,'เสาร์'),(6,'อาทิตย์')] %}
-              <label><input type="checkbox" name="recurring_weekdays" value="{{ value }}"> {{ label }}</label>
+              <label><input type="checkbox" name="recurring_weekday_{{ value }}" value="1"> {{ label }}</label>
               {% endfor %}
             </div>
             <div class="mm3-hint">เลือกได้หลายวัน เช่น อังคาร + ศุกร์</div>
@@ -381,7 +381,7 @@
         <div id="recurring-monthly" class="mm3-field recurring-options" style="display:none;">
             <label>วันที่ได้รับในแต่ละเดือน</label>
             <div class="month-day-grid">
-              {% for d in range(1,32) %}<label><input type="checkbox" name="recurring_month_days" value="{{ d }}"> {{ d }}</label>{% endfor %}
+              {% for d in range(1,32) %}<label><input type="checkbox" name="recurring_month_day_{{ d }}" value="1"> {{ d }}</label>{% endfor %}
             </div>
             <div class="mm3-hint">เลือกได้หลายวันที่ เช่น 1, 15 และ 28 — ถ้าเลือก 31 ในเดือนสั้น ระบบใช้วันสุดท้ายของเดือน</div>
         </div>
