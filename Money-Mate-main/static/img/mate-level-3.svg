@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" role="img" aria-label="น้อง Mate ระดับมุ่งมั่น">
+  <defs><filter id="s"><feDropShadow dx="0" dy="12" stdDeviation="10" flood-color="#8b3b2c" flood-opacity=".2"/></filter></defs>
+  <ellipse cx="250" cy="446" rx="132" ry="22" fill="#8b3b2c" opacity=".12"/>
+  <image href="mate-login.png" x="55" y="45" width="390" height="390" preserveAspectRatio="xMidYMid meet" filter="url(#s)"/>
+  <path d="M142 111q108-83 218 0l-24 35H164z" fill="#b4233f" stroke="#86192e" stroke-width="8"/>
+  <path d="M326 119q73 1 105 31-59 12-109 0z" fill="#d43855"/>
+  <circle cx="251" cy="105" r="29" fill="#ffc43d" stroke="#e89516" stroke-width="6"/><text x="251" y="117" text-anchor="middle" font-size="32" font-weight="900" fill="#b76309">฿</text>
+</svg>

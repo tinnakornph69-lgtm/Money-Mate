@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ title or team.group.name }} · {{ team.group.name }}</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+{% block head %}{% endblock %}
+</head>
+<body>
+<div class="mm-layout">
+<header class="site-header">
+  <div class="wrap header-row">
+    <button type="button" class="mm-sidebar-toggle" id="mmSidebarToggle" aria-label="เปิดเมนู" aria-controls="mmSidebar" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+    <a class="brand" href="{{ url_for('home') }}">
+      <img src="{{ url_for('static', filename='eng-logo.png') }}" alt="คณะวิศวกรรมศาสตร์ ม.อุบลฯ">
+      <span class="brand-text">
+        <span class="brand-line1">คณะวิศวกรรมศาสตร์ มหาวิทยาลัยอุบลราชธานี</span>
+        <span class="brand-line2">1309102 การเขียนโปรแกรมคอมพิวเตอร์ · Computer Programming Project</span>
+      </span>
+    </a>
+    <div class="header-account">
+      {% if current_user %}
+        <span class="profile-trigger">👤 {{ current_user }}</span>
+        <form method="post" action="{{ url_for('page', name='page1') }}" class="logout-form">
+          <input type="hidden" name="action" value="logout">
+          <button class="header-logout" type="submit">ออกจากระบบ</button>
+        </form>
+      {% else %}
+        <a class="header-login" href="{{ url_for('page', name='page1') }}">เข้าสู่ระบบ</a>
+      {% endif %}
+      <span class="group-badge">{{ team.group.name }} · {{ team.group.section }}</span>
+    </div>
+  </div>
+</header>
+
+<div class="mm-content-row">
+  <div class="mm-sidebar-backdrop" id="mmSidebarBackdrop"></div>
+  <aside class="mm-sidebar" id="mmSidebar">
+    <nav class="mm-sidenav" aria-label="เมนูหลัก">
+      <a href="{{ url_for('home') }}" class="mm-sidenav-link {{ 'active' if request.path == '/' }}">
+        <span class="mm-sidenav-icon">🏠</span><span class="mm-sidenav-text">หน้าแรก</span>
+      </a>
+
+      <details class="mm-sidenav-group" {% if request.path in ['/page2','/page3','/page8'] %}open{% endif %}>
+        <summary><span class="mm-sidenav-icon">💸</span><span class="mm-sidenav-text">ธุรกรรม</span></summary>
+        <div class="mm-sidenav-sub">
+          <a href="{{ url_for('page', name='page2') }}" class="{{ 'active' if request.path == '/page2' }}">Dashboard</a>
+          <a href="{{ url_for('page', name='page3') }}" class="{{ 'active' if request.path == '/page3' }}">รายรับ-รายจ่าย</a>
+          <a href="{{ url_for('page', name='page8') }}" class="{{ 'active' if request.path == '/page8' }}">Smart Input</a>
+        </div>
+      </details>
+
+      <details class="mm-sidenav-group" {% if request.path in ['/page4','/page5','/page9'] %}open{% endif %}>
+        <summary><span class="mm-sidenav-icon">📊</span><span class="mm-sidenav-text">วิเคราะห์</span></summary>
+        <div class="mm-sidenav-sub">
+          <a href="{{ url_for('page', name='page4') }}" class="{{ 'active' if request.path == '/page4' }}">วิเคราะห์การเงิน</a>
+          <a href="{{ url_for('page', name='page5') }}" class="{{ 'active' if request.path == '/page5' }}">Smart Output</a>
+          <a href="{{ url_for('page', name='page9') }}" class="{{ 'active' if request.path == '/page9' }}">รายงาน</a>
+        </div>
+      </details>
+
+      <details class="mm-sidenav-group" {% if request.path in ['/page6','/page7','/page11'] %}open{% endif %}>
+        <summary><span class="mm-sidenav-icon">🎯</span><span class="mm-sidenav-text">แผนการเงิน</span></summary>
+        <div class="mm-sidenav-sub">
+          <a href="{{ url_for('page', name='page6') }}" class="{{ 'active' if request.path == '/page6' }}">งบประมาณ</a>
+          <a href="{{ url_for('page', name='page7') }}" class="{{ 'active' if request.path == '/page7' }}">เงินออม</a>
+          <a href="{{ url_for('page', name='page11') }}" class="{{ 'active' if request.path == '/page11' }}">IF Simulator</a>
+        </div>
+      </details>
+
+      <details class="mm-sidenav-group" {% if request.path == '/team' or request.path == '/page1' %}open{% endif %}>
+        <summary><span class="mm-sidenav-icon">👤</span><span class="mm-sidenav-text">บัญชี</span></summary>
+        <div class="mm-sidenav-sub">
+          {% if not current_user %}<a href="{{ url_for('page', name='page1') }}" class="{{ 'active' if request.path == '/page1' }}">เข้าสู่ระบบ / สมัครสมาชิก</a>{% endif %}
+          <a href="{{ url_for('page', name='team') }}" class="{{ 'active' if request.path == '/team' }}">ทีมผู้จัดทำ</a>
+          {% if is_admin %}<a href="{{ url_for('page', name='page10') }}" class="{{ 'active' if request.path == '/page10' }}">🔐 Admin</a>{% endif %}
+        </div>
+      </details>
+    </nav>
+  </aside>
+
+  <div class="mm-page">
+    <main class="wrap">
+      {% if msg %}<div class="banner">{{ msg }}</div>{% endif %}
+      {% if notice %}<div class="banner">{{ notice }}</div>{% endif %}
+      {% block content %}{% endblock %}
+    </main>
+
+    <footer class="site-footer">
+      <div class="wrap">
+        <span>{{ team.group.name }} — {{ team.group.topic }}</span>
+        <span class="members">
+          {% for m in team.members %}{{ m.name }}{% if not loop.last %} · {% endif %}{% endfor %}
+        </span>
+      </div>
+    </footer>
+  </div>
+</div>
+</div>
+{% block scripts %}{% endblock %}
+<script>
+  // สลับเปิด/ปิดแถบเมนูด้านข้างบนจอมือถือ
+  document.addEventListener('DOMContentLoaded', function () {
+    const sidebar = document.getElementById('mmSidebar');
+    const toggle = document.getElementById('mmSidebarToggle');
+    const backdrop = document.getElementById('mmSidebarBackdrop');
+
+    if (!sidebar) return;
+
+    function closeSidebar() {
+      sidebar.classList.remove('open');
+      if (backdrop) backdrop.classList.remove('show');
+      if (toggle) toggle.setAttribute('aria-expanded', 'false');
+    }
+
+    function openSidebar() {
+      sidebar.classList.add('open');
+      if (backdrop) backdrop.classList.add('show');
+      if (toggle) toggle.setAttribute('aria-expanded', 'true');
+    }
+
+    if (toggle) {
+      toggle.addEventListener('click', function () {
+        if (sidebar.classList.contains('open')) {
+          closeSidebar();
+        } else {
+          openSidebar();
+        }
+      });
+    }
+
+    if (backdrop) {
+      backdrop.addEventListener('click', closeSidebar);
+    }
+
+    sidebar.querySelectorAll('.mm-sidenav-link, .mm-sidenav-sub a').forEach(function (a) {
+      a.addEventListener('click', closeSidebar);
+    });
+  });
+</script>
+</body>
+</html>

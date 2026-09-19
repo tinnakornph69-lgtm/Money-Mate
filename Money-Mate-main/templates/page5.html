@@ -1,0 +1,7 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="hero-box"><h1>🧠 Smart Output</h1><p class="note">สรุปและวิเคราะห์ข้อมูลการเงินของเดือนปัจจุบันแบบอ่านง่าย</p></div>
+<div class="grid-3"><div class="stat gold"><div class="label">Financial Health Score</div><div class="value">{{ score }}/100</div></div><div class="stat"><div class="label">วงเงินใช้ต่อวันโดยประมาณ</div><div class="value">฿ {{ "{:,.2f}".format(daily_limit) }}</div></div><div class="stat"><div class="label">คาดการณ์เงินเหลือปลายเดือน*</div><div class="value">฿ {{ "{:,.2f}".format(forecast) }}</div></div></div>
+<div class="grid-2"><section class="card"><h2>💡 Smart Tips</h2>{% for x in tips %}<p>• {{ x }}</p>{% else %}<p class="note">เพิ่มข้อมูลเพื่อรับคำแนะนำ</p>{% endfor %}</section><section class="card"><h2>🚨 Alerts</h2>{% for x in alerts %}<p class="badge">{{ x }}</p>{% else %}<p class="note">ยังไม่มีการแจ้งเตือนสำคัญ</p>{% endfor %}</section></div>
+<section class="card"><h2>🏷️ หมวดใช้เงินสูง</h2>{% for c,a in categories %}<div class="sum-row"><span>{{ c }}</span><b>฿ {{ "{:,.2f}".format(a) }}</b></div>{% else %}<p class="note">ยังไม่มีรายจ่ายเดือนนี้</p>{% endfor %}</section><p class="note">* ประมาณการรายจ่ายทั้งเดือนจากค่าเฉลี่ยรายวันของเดือนปัจจุบัน จึงไม่ใช่การรับประกันยอดเงินจริง</p>
+{% endblock %}

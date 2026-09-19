@@ -1,0 +1,228 @@
+[
+  {
+    "id": "20343e4bbc2f4e9b",
+    "type": "income",
+    "amount": 10000.0,
+    "category": "อาหาร",
+    "date": "2026-09-17",
+    "description": "",
+    "created_at": "2026-09-17T18:06:59"
+  },
+  {
+    "id": "239372794668b207",
+    "type": "income",
+    "amount": 10.0,
+    "category": "อื่น ๆ",
+    "date": "2026-09-17",
+    "description": "",
+    "created_at": "2026-09-17T19:03:44"
+  },
+  {
+    "id": "0464047975e75608",
+    "type": "income",
+    "amount": 2000.0,
+    "category": "เงินเดือน",
+    "date": "2026-09-17",
+    "description": "",
+    "created_at": "2026-09-17T21:05:39",
+    "owner": "Yuzix_lnwza007"
+  },
+  {
+    "id": "d8e26e8ee6610522",
+    "type": "income",
+    "amount": 2555.0,
+    "category": "สุขภาพ",
+    "date": "2026-09-17",
+    "description": "ค่าน้ำ",
+    "created_at": "2026-09-17T21:07:24",
+    "owner": "16266"
+  },
+  {
+    "id": "39bc379f59023089",
+    "type": "expense",
+    "amount": 60.0,
+    "category": "อาหาร",
+    "date": "2026-09-17",
+    "description": "ซื้อไก่",
+    "created_at": "2026-09-17T21:08:28",
+    "owner": "Yuzix_lnwza007"
+  },
+  {
+    "id": "cbc306af461a773e",
+    "type": "income",
+    "amount": 2000.0,
+    "category": "เงินเดือน",
+    "date": "2026-09-17",
+    "description": "",
+    "created_at": "2026-09-17T21:09:13",
+    "owner": "Gibby"
+  },
+  {
+    "id": "4ff8201d8d4953dc",
+    "type": "income",
+    "amount": 10000.0,
+    "category": "เงินเดือน",
+    "date": "2026-09-17",
+    "description": "",
+    "created_at": "2026-09-17T21:09:24",
+    "owner": "Gibby"
+  },
+  {
+    "id": "7e44e3bac851e5bc",
+    "type": "expense",
+    "amount": 300.0,
+    "category": "เดินทาง",
+    "date": "2026-09-17",
+    "description": "",
+    "created_at": "2026-09-17T21:09:39",
+    "owner": "Gibby"
+  },
+  {
+    "id": "6fc420aa340776e1",
+    "type": "expense",
+    "amount": 3000.0,
+    "category": "อาหาร",
+    "date": "2026-09-17",
+    "description": "",
+    "created_at": "2026-09-17T21:11:29",
+    "owner": "111"
+  },
+  {
+    "id": "ed15d8c1fd539a85",
+    "type": "expense",
+    "amount": 150.0,
+    "category": "อาหาร",
+    "date": "2026-09-17",
+    "description": "phone",
+    "created_at": "2026-09-17T21:11:59",
+    "owner": "123"
+  },
+  {
+    "id": "f609b3a5cb04a5a9",
+    "type": "income",
+    "amount": 500.0,
+    "category": "บิล/ค่าใช้จ่าย",
+    "date": "2026-09-17",
+    "description": "ค่ากลางวัน",
+    "created_at": "2026-09-17T21:15:15",
+    "owner": "16266"
+  },
+  {
+    "id": "00cd77dd30cfdb01",
+    "type": "expense",
+    "amount": 1000.0,
+    "category": "สุขภาพ",
+    "date": "2026-09-17",
+    "description": "ค่านวด",
+    "created_at": "2026-09-17T21:15:40",
+    "owner": "16266"
+  },
+  {
+    "id": "1c915d532392c842",
+    "type": "expense",
+    "amount": 500.0,
+    "category": "เงินออม",
+    "date": "2026-09-17",
+    "description": "ออมอัตโนมัติ: pc",
+    "created_at": "2026-09-17T21:43:34",
+    "owner": "111",
+    "source": "automatic_saving",
+    "saving_goal_id": "6e67f1c5084041fd"
+  },
+  {
+    "id": "32cc9465bc72ff4e",
+    "type": "income",
+    "amount": 2000.0,
+    "category": "รายรับประจำ",
+    "date": "2026-09-17",
+    "description": "เงินรายสัปดาห์",
+    "created_at": "2026-09-17T21:46:27",
+    "owner": "111",
+    "source": "recurring_income",
+    "recurring_id": "07a0621253a0e2f2"
+  },
+  {
+    "id": "57cd3cf192ac3821",
+    "type": "income",
+    "amount": 10000000.0,
+    "category": "สุขภาพ",
+    "date": "2026-09-17",
+    "description": "",
+    "created_at": "2026-09-17T21:50:14",
+    "owner": "123"
+  },
+  {
+    "id": "b76fdc44e2f8c3f3",
+    "type": "income",
+    "amount": 10000000.0,
+    "category": "สุขภาพ",
+    "date": "2026-09-17",
+    "description": "",
+    "created_at": "2026-09-17T21:50:14",
+    "owner": "123"
+  },
+  {
+    "id": "7feba1044945de1e",
+    "type": "expense",
+    "amount": 1999.0,
+    "category": "เงินออม",
+    "date": "2026-09-17",
+    "description": "ออมอัตโนมัติ: ซื้อหมูโต้ง",
+    "created_at": "2026-09-17T21:50:19",
+    "owner": "123",
+    "source": "automatic_saving",
+    "saving_goal_id": "7c38dffa6c81e645"
+  },
+  {
+    "id": "a5b9787db42a87b9",
+    "type": "expense",
+    "amount": 1999.0,
+    "category": "เงินออม",
+    "date": "2026-09-17",
+    "description": "ออมอัตโนมัติ: ซื้อหมูโต้ง",
+    "created_at": "2026-09-17T21:50:19",
+    "owner": "123",
+    "source": "automatic_saving",
+    "saving_goal_id": "e5cc9ebba787acbd"
+  },
+  {
+    "id": "saving_goal_20260917221652740064_1789658212.852291",
+    "owner": "123",
+    "type": "expense",
+    "amount": 333.0,
+    "category": "เงินออม",
+    "description": "ออมอัตโนมัติ: ค่ากาแฟ",
+    "date": "2026-09-17",
+    "source": "auto_saving"
+  },
+  {
+    "id": "saving_goal_20260917221720495620_1789658240.627222",
+    "owner": "123",
+    "type": "expense",
+    "amount": 11111.0,
+    "category": "เงินออม",
+    "description": "ออมอัตโนมัติ: 3123",
+    "date": "2026-09-17",
+    "source": "auto_saving"
+  },
+  {
+    "id": "b7360e011bafb44b",
+    "type": "expense",
+    "amount": 20000.0,
+    "category": "อาหาร",
+    "date": "2026-09-18",
+    "description": "",
+    "created_at": "2026-09-18T11:55:16",
+    "owner": "admin"
+  },
+  {
+    "id": "9af234dbbd87d769",
+    "type": "income",
+    "amount": 2000.0,
+    "category": "งานเสริม",
+    "date": "2026-09-18",
+    "description": "",
+    "created_at": "2026-09-18T11:55:29",
+    "owner": "admin"
+  }
+]

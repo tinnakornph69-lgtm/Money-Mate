@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block head %}
+<style>
+.si-hero{background:linear-gradient(135deg,#7a1f2b,#9a3040);color:#fff;border-radius:18px;padding:26px;margin-bottom:16px}
+.si-card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:22px;margin-bottom:16px}
+.si-input{width:100%;padding:14px 16px;border:1px solid #cbd5e1;border-radius:11px;font:inherit;font-size:16px}
+.si-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.si-field label{display:block;font-size:13px;font-weight:700;margin-bottom:6px}
+.si-field input,.si-field select{width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:9px;font:inherit}
+.si-help{color:rgba(255,255,255,.88);margin:6px 0 0}.si-custom{display:none;margin-top:7px}.si-custom.show{display:block}
+@media(max-width:700px){.si-grid{grid-template-columns:1fr}}
+</style>
+{% endblock %}
+{% block content %}
+<section class="si-hero">
+  <h1>⌨️ Smart Input</h1>
+  <p class="si-help">พิมพ์แบบภาษาคน เช่น “ข้าวกลางวัน 50 บาท” หรือ “ได้เงินเดือน 15000” แล้วระบบจะแยกชื่อรายการกับราคาให้</p>
+</section>
+
+<section class="si-card">
+  <h2 style="margin-top:0">1. พิมพ์รายการ</h2>
+  <form method="post">
+    <input type="hidden" name="action" value="parse">
+    <input class="si-input" name="raw" value="{{ preview.raw if preview else '' }}" placeholder="เช่น ซื้อข้าวกลางวัน 60 บาท" required>
+    <br><br>
+    <div class="si-grid">
+      <div class="si-field"><label>ประเภท</label><select name="type"><option value="expense" {% if not preview or preview.type=='expense' %}selected{% endif %}>🔴 รายจ่าย</option><option value="income" {% if preview and preview.type=='income' %}selected{% endif %}>💚 รายรับ</option></select></div>
+      <div class="si-field"><label>หมวดหมู่</label><select name="category" class="si-category" data-custom="si-custom-1">{% for c in categories %}<option {% if preview and preview.category==c %}selected{% endif %}>{{ c }}</option>{% endfor %}</select><div id="si-custom-1" class="si-custom {% if preview and preview.category=='อื่น ๆ' %}show{% endif %}"><input name="custom_category" maxlength="60" value="{{ preview.custom_category if preview else '' }}" placeholder="พิมพ์หมวดหมู่เอง เช่น ค่าหอพัก"></div></div>
+    </div>
+    <br><button class="btn mm-primary" type="submit">✨ แยกชื่อและราคา</button>
+  </form>
+</section>
+
+{% if preview %}
+<section class="si-card">
+  <h2 style="margin-top:0">2. ผลลัพธ์ที่แยกได้</h2>
+  <form method="post">
+    <input type="hidden" name="action" value="save">
+    <div class="si-grid">
+      <div class="si-field"><label>ชื่อรายการ</label><input name="name" value="{{ preview.name }}" required></div>
+      <div class="si-field"><label>ราคา / จำนวนเงิน</label><input name="amount" type="number" min="0.01" step="0.01" value="{{ preview.amount }}" required></div>
+      <div class="si-field"><label>ประเภท</label><select name="type"><option value="expense" {% if preview.type=='expense' %}selected{% endif %}>🔴 รายจ่าย</option><option value="income" {% if preview.type=='income' %}selected{% endif %}>💚 รายรับ</option></select></div>
+      <div class="si-field"><label>หมวดหมู่</label><select name="category" class="si-category" data-custom="si-custom-2">{% for c in categories %}<option {% if preview.category==c %}selected{% endif %}>{{ c }}</option>{% endfor %}</select><div id="si-custom-2" class="si-custom {% if preview.category=='อื่น ๆ' %}show{% endif %}"><input name="custom_category" maxlength="60" value="{{ preview.custom_category if preview else '' }}" placeholder="พิมพ์หมวดหมู่เอง"></div></div>
+    </div>
+    <br><button class="btn mm-primary" type="submit">💾 บันทึกรายการ</button>
+    <button class="btn" type="submit" name="action" value="clear">ล้าง</button>
+  </form>
+</section>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.querySelectorAll('.si-category').forEach(function(sel){
+  function toggle(){const box=document.getElementById(sel.dataset.custom);if(box)box.classList.toggle('show',sel.value==='อื่น ๆ');}
+  sel.addEventListener('change',toggle);toggle();
+});
+</script>
+{% endblock %}

@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" role="img" aria-label="น้อง Mate ระดับแชมป์">
+  <defs><filter id="s"><feDropShadow dx="0" dy="12" stdDeviation="10" flood-color="#8b3b2c" flood-opacity=".23"/></filter><linearGradient id="g" x2="0" y2="1"><stop stop-color="#ffe66b"/><stop offset="1" stop-color="#f39a17"/></linearGradient></defs>
+  <ellipse cx="250" cy="450" rx="145" ry="23" fill="#8b3b2c" opacity=".13"/>
+  <path d="M139 213Q55 310 92 430l128-75zM361 213q84 97 47 217l-128-75z" fill="#9e1c37" stroke="#711225" stroke-width="8"/>
+  <image href="mate-login.png" x="55" y="40" width="390" height="390" preserveAspectRatio="xMidYMid meet" filter="url(#s)"/>
+  <path d="M181 100l28-61 41 43 42-43 27 61-18 38H199z" fill="url(#g)" stroke="#e48311" stroke-width="7"/><circle cx="250" cy="103" r="19" fill="#fff0a5"/>
+  <g transform="translate(378 278)"><path d="M-42-38h84v55q0 54-42 72-42-18-42-72z" fill="url(#g)" stroke="#d97b0e" stroke-width="7"/><path d="M-43-21h-30q0 55 44 52M43-21h30q0 55-44 52" fill="none" stroke="#d97b0e" stroke-width="11"/><rect x="-8" y="84" width="16" height="38" rx="6" fill="#d97b0e"/><rect x="-42" y="116" width="84" height="18" rx="8" fill="#f2a51b"/></g>
+  <path d="M69 122l9 21 23 3-17 16 4 23-19-11-20 11 4-23-17-16 23-3zM421 122l9 21 23 3-17 16 4 23-19-11-20 11 4-23-17-16 23-3z" fill="#ffd43b"/>
+</svg>

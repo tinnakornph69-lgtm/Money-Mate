@@ -1,0 +1,7 @@
+[
+  {"name": "Multimeter", "category": "measure", "qty": 12, "price": 850},
+  {"name": "Oscilloscope", "category": "measure", "qty": 4, "price": 25000},
+  {"name": "Arduino Uno", "category": "board", "qty": 30, "price": 390},
+  {"name": "Breadboard", "category": "tool", "qty": 40, "price": 60},
+  {"name": "Soldering iron", "category": "tool", "qty": 10, "price": 450}
+]

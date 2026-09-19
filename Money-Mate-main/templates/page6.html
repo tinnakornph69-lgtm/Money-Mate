@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block head %}
+<style>
+.budget-head{display:flex;justify-content:space-between;align-items:flex-end;gap:16px;flex-wrap:wrap}
+.budget-period{display:flex;gap:8px;align-items:center}
+.budget-period select{padding:9px 12px;border:1px solid var(--line);border-radius:10px;font:inherit;background:#fff}
+.budget-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.budget-form{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.budget-form .full{grid-column:1/-1}
+.budget-form label{display:block;font-size:13px;font-weight:700;margin-bottom:6px}
+.budget-form input,.budget-form select{width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:9px;font:inherit}
+.budget-note{font-size:12px;color:var(--muted)}
+@media(max-width:700px){.budget-grid{grid-template-columns:1fr}.budget-form{grid-template-columns:1fr}.budget-form .full{grid-column:auto}}
+</style>
+{% endblock %}
+{% block content %}
+<div class="hero-box">
+  <div class="budget-head">
+    <div>
+      <h1>🎯 งบประมาณ</h1>
+      <p class="note">เลือกช่วงงบได้ทั้งรายวัน รายสัปดาห์ รายเดือน และรายปี</p>
+    </div>
+    <form method="get" class="budget-period">
+      <label for="period">ช่วงงบ</label>
+      <select id="period" name="period" onchange="this.form.submit()">
+        {% for key,label in periods.items() %}<option value="{{ key }}" {% if period==key %}selected{% endif %}>{{ label }}</option>{% endfor %}
+      </select>
+    </form>
+  </div>
+</div>
+
+<div class="budget-grid">
+  <div class="stat"><div class="label">งบ{{ period_label }} ({{ period_key }})</div><div class="value">฿ {{ "{:,.2f}".format(monthly) }}</div></div>
+  <div class="stat bad"><div class="label">ใช้ไปในช่วงนี้</div><div class="value">฿ {{ "{:,.2f}".format(expense) }}</div></div>
+  <div class="stat good"><div class="label">งบคงเหลือ</div><div class="value">฿ {{ "{:,.2f}".format(remaining) }}</div></div>
+</div>
+
+<div class="grid-2">
+<section class="card">
+  <h2>ตั้งงบ{{ period_label }}</h2>
+  <form method="post" class="budget-form">
+    <input type="hidden" name="action" value="budget">
+    <input type="hidden" name="period" value="{{ period }}">
+    <div class="full"><label>งบประมาณ</label><input type="number" step="0.01" min="0" name="amount" value="{{ monthly }}" required></div>
+    <div class="full"><button class="btn mm-primary">บันทึกงบ{{ period_label }}</button></div>
+  </form>
+</section>
+
+<section class="card">
+  <h2>ตั้งงบตามหมวด</h2>
+  <form method="post" class="budget-form">
+    <input type="hidden" name="action" value="category">
+    <input type="hidden" name="period" value="{{ period }}">
+    <div><label>หมวด</label><select name="category">{% for c in categories %}<option>{{ c }}</option>{% endfor %}</select></div>
+    <div><label>งบ</label><input type="number" step="0.01" min="0" name="amount" required></div>
+    <div class="full"><input name="custom_category" maxlength="60" placeholder="ถ้าเลือก “อื่น ๆ” พิมพ์หมวดหมู่เอง"></div>
+    <div class="full"><button class="btn mm-primary">บันทึกงบหมวด</button></div>
+  </form>
+  <p class="budget-note">งบหมวดจะใช้กับช่วง {{ period_label }} ที่เลือกอยู่</p>
+</section>
+</div>
+
+<section class="card">
+  <h2>📊 ความคืบหน้ารายหมวด</h2>
+  {% for r in rows %}
+    <div class="bar-row"><span>{{ r.category }}</span><div class="bar-track"><div class="bar-fill" style="width:{{ r.pct }}%"></div></div><span class="num">฿ {{ "{:,.0f}".format(r.spent) }} / {{ "{:,.0f}".format(r.budget) if r.budget else '-' }}</span></div>
+  {% else %}<p class="note">ยังไม่มีข้อมูล</p>{% endfor %}
+</section>
+{% endblock %}
