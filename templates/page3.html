@@ -1,0 +1,1167 @@
+{% extends "_money_base.html" %}
+
+{% block head %}
+<style>
+.mm3-summary{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:14px
+}
+
+.mm3-card{
+    background:#fff;
+    border:1px solid var(--line);
+    border-radius:16px;
+    padding:22px;
+    margin:14px 0
+}
+
+.mm3-summary .mm3-card{
+    margin:0
+}
+
+.mm3-card strong{
+    display:block;
+    font-size:24px;
+    margin-top:4px
+}
+
+.mm3-form{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:14px
+}
+
+.mm3-field{
+    display:flex;
+    flex-direction:column;
+    gap:6px
+}
+
+.mm3-field.full{
+    grid-column:1/-1
+}
+
+.mm3-field label{
+    font-weight:700;
+    font-size:13px
+}
+
+.mm3-field input,
+.mm3-field select{
+    padding:10px;
+    border:1px solid var(--line);
+    border-radius:9px;
+    font:inherit;
+    background:#fff
+}
+
+.mm3-filter{
+    display:grid;
+    grid-template-columns:2fr 1fr 1fr auto;
+    gap:9px
+}
+
+.mm3-filter input,
+.mm3-filter select{
+    padding:10px;
+    border:1px solid var(--line);
+    border-radius:9px;
+    font:inherit
+}
+
+.mm3-actions{
+    display:flex;
+    gap:5px
+}
+
+.mm3-income{
+    color:#247a48;
+    font-weight:700
+}
+
+.mm3-expense{
+    color:#a32626;
+    font-weight:700
+}
+
+.mm3-custom{
+    display:none;
+    margin-top:6px
+}
+
+.mm3-custom.show{
+    display:block
+}
+
+.mm3-recurring{
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding:16px;
+    margin-top:12px;
+    background:#fafafa
+}
+
+.mm3-recurring-grid{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:14px
+}
+
+.mm3-frequency{
+    display:flex;
+    gap:18px;
+    flex-wrap:wrap;
+    padding:10px 0
+}
+
+.mm3-frequency label{
+    display:flex;
+    align-items:center;
+    gap:6px;
+    cursor:pointer
+}
+
+.mm3-recurring-list{
+    display:grid;
+    gap:10px;
+    margin-top:15px
+}
+
+.mm3-recurring-item{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:15px;
+    border:1px solid var(--line);
+    border-radius:12px;
+    padding:14px;
+    background:#fff
+}
+
+.mm3-recurring-info{
+    display:flex;
+    flex-direction:column;
+    gap:4px
+}
+
+.mm3-recurring-name{
+    font-weight:700;
+    font-size:16px
+}
+
+.mm3-recurring-meta{
+    font-size:13px;
+    color:#777
+}
+
+.mm3-status{
+    display:inline-block;
+    width:max-content;
+    padding:3px 8px;
+    border-radius:999px;
+    font-size:12px;
+    background:#eef7f1;
+    color:#247a48
+}
+
+.mm3-status.done{
+    background:#eee;
+    color:#777
+}
+
+.mm3-hint{
+    color:#777;
+    font-size:13px;
+    margin-top:5px
+}
+
+.mm3-divider{
+    height:1px;
+    background:var(--line);
+    margin:20px 0
+}
+
+@media(max-width:750px){
+    .mm3-summary{
+        grid-template-columns:1fr
+    }
+
+    .mm3-form{
+        grid-template-columns:1fr
+    }
+
+    .mm3-field.full{
+        grid-column:auto
+    }
+
+    .mm3-filter{
+        grid-template-columns:1fr
+    }
+
+    .mm3-recurring-grid{
+        grid-template-columns:1fr
+    }
+
+    .mm3-recurring-item{
+        flex-direction:column;
+        align-items:flex-start
+    }
+}
+</style>
+{% endblock %}
+
+
+{% block content %}
+
+<div class="hero-box">
+    <h1>💰 รายรับ - รายจ่าย</h1>
+    <p class="note">
+        บันทึก แก้ไข ลบ ค้นหา และตั้งรายรับล่วงหน้าได้
+    </p>
+</div>
+
+
+<!-- =====================================================
+     สรุปยอด
+===================================================== -->
+
+<div class="mm3-summary">
+
+    <div class="mm3-card">
+        <span>รายรับทั้งหมด</span>
+
+        <strong class="mm3-income">
+            + ฿ {{ "{:,.2f}".format(total_income) }}
+        </strong>
+    </div>
+
+    <div class="mm3-card">
+        <span>รายจ่ายทั้งหมด</span>
+
+        <strong class="mm3-expense">
+            - ฿ {{ "{:,.2f}".format(total_expense) }}
+        </strong>
+    </div>
+
+    <div class="mm3-card">
+        <span>คงเหลือ</span>
+
+        <strong>
+            ฿ {{ "{:,.2f}".format(balance) }}
+        </strong>
+    </div>
+
+</div>
+
+
+<!-- =====================================================
+     รายรับล่วงหน้า / รายรับประจำ
+===================================================== -->
+
+<div class="mm3-card">
+
+    <h2>📅 รายรับล่วงหน้า / รายรับประจำ</h2>
+
+    <p class="note">
+        ตั้งรายรับไว้ล่วงหน้า เมื่อถึงวันที่กำหนด
+        ระบบจะเพิ่มเข้าเป็นรายรับให้อัตโนมัติ
+    </p>
+
+    <form method="post">
+
+        <input
+            type="hidden"
+            name="action"
+            value="add_recurring"
+        >
+
+        <div class="mm3-recurring-grid">
+
+            <div class="mm3-field">
+
+                <label>
+                    ชื่อรายรับ
+                </label>
+
+                <input
+                    name="recurring_name"
+                    type="text"
+                    maxlength="120"
+                    placeholder="เช่น เงินเดือน / ค่าขนม / รายได้เสริม"
+                    required
+                >
+
+            </div>
+
+
+            <div class="mm3-field">
+
+                <label>
+                    จำนวนเงิน
+                </label>
+
+                <input
+                    name="recurring_amount"
+                    type="number"
+                    min="0.01"
+                    step="0.01"
+                    placeholder="15000"
+                    required
+                >
+
+            </div>
+
+        </div>
+
+
+        <div class="mm3-field">
+
+            <label>
+                รูปแบบการรับเงิน
+            </label>
+
+            <div class="mm3-frequency">
+
+                <label>
+                    <input
+                        type="radio"
+                        name="recurring_frequency"
+                        value="once"
+                        checked
+                    >
+
+                    รับครั้งเดียว
+                </label>
+
+
+                <label>
+                    <input
+                        type="radio"
+                        name="recurring_frequency"
+                        value="monthly"
+                    >
+
+                    รับทุกเดือน
+                </label>
+
+            </div>
+
+        </div>
+
+
+        <!-- ครั้งเดียว -->
+
+        <div
+            id="recurring-once"
+            class="mm3-field"
+        >
+
+            <label>
+                วันที่ได้รับ
+            </label>
+
+            <input
+                name="recurring_date"
+                type="date"
+                value="{{ today }}"
+            >
+
+            <div class="mm3-hint">
+                เมื่อถึงวันนี้ ระบบจะเพิ่มรายรับให้อัตโนมัติ
+            </div>
+
+        </div>
+
+
+        <!-- ทุกเดือน -->
+
+        <div
+            id="recurring-monthly"
+            class="mm3-field"
+            style="display:none;"
+        >
+
+            <label>
+                วันที่รับของทุกเดือน
+            </label>
+
+            <select name="recurring_day">
+
+                <option value="">
+                    -- เลือกวันที่ --
+                </option>
+
+                {% for d in range(1, 32) %}
+
+                <option value="{{ d }}">
+                    วันที่ {{ d }}
+                </option>
+
+                {% endfor %}
+
+            </select>
+
+            <div class="mm3-hint">
+                ถ้าเดือนนั้นไม่มีวันที่เลือก เช่น วันที่ 31
+                ระบบจะใช้วันสุดท้ายของเดือนแทน
+            </div>
+
+        </div>
+
+
+        <br>
+
+        <button class="btn mm-primary">
+            📅 ตั้งรายรับ
+        </button>
+
+    </form>
+
+
+    {% if recurring_items %}
+
+    <div class="mm3-divider"></div>
+
+    <h3>
+        📋 รายรับที่ตั้งไว้
+    </h3>
+
+
+    <div class="mm3-recurring-list">
+
+        {% for r in recurring_items %}
+
+        <div class="mm3-recurring-item">
+
+            <div class="mm3-recurring-info">
+
+                <div class="mm3-recurring-name">
+                    {{ r.name }}
+                </div>
+
+                <div class="mm3-income">
+                    + ฿ {{ "{:,.2f}".format(r.amount) }}
+                </div>
+
+                <div class="mm3-recurring-meta">
+
+                    {% if r.frequency == "monthly" %}
+
+                        ทุกเดือน วันที่ {{ r.day }}
+
+                    {% else %}
+
+                        วันที่ {{ r.next_date }}
+
+                    {% endif %}
+
+                </div>
+
+
+                {% if r.active %}
+
+                <span class="mm3-status">
+                    {% if r.frequency == "monthly" %}
+                        กำลังทำงาน
+                    {% else %}
+                        รอดำเนินการ
+                    {% endif %}
+                </span>
+
+                {% else %}
+
+                <span class="mm3-status done">
+                    รับเงินแล้ว
+                </span>
+
+                {% endif %}
+
+            </div>
+
+
+            {% if r.active %}
+
+            <form method="post">
+
+                <input
+                    type="hidden"
+                    name="action"
+                    value="delete_recurring"
+                >
+
+                <input
+                    type="hidden"
+                    name="id"
+                    value="{{ r.id }}"
+                >
+
+                <button
+                    class="btn small danger"
+                    type="submit"
+                    onclick="return confirm('ยกเลิกรายรับที่ตั้งไว้นี้หรือไม่?')"
+                >
+                    ยกเลิก
+                </button>
+
+            </form>
+
+            {% endif %}
+
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+    {% else %}
+
+    <p class="note">
+        ยังไม่มีรายรับที่ตั้งไว้
+    </p>
+
+    {% endif %}
+
+</div>
+
+
+<!-- =====================================================
+     แก้ไขรายการ
+===================================================== -->
+
+{% if edit_item %}
+
+<div class="mm3-card">
+
+    <h2>✏️ แก้ไขรายการ</h2>
+
+    <form method="post">
+
+        <input
+            type="hidden"
+            name="action"
+            value="edit"
+        >
+
+        <input
+            type="hidden"
+            name="id"
+            value="{{ edit_item.id }}"
+        >
+
+
+        <div class="mm3-form">
+
+            <div class="mm3-field">
+
+                <label>ประเภท</label>
+
+                <select name="type">
+
+                    <option
+                        value="income"
+                        {% if edit_item.type == 'income' %}
+                        selected
+                        {% endif %}
+                    >
+                        รายรับ
+                    </option>
+
+                    <option
+                        value="expense"
+                        {% if edit_item.type == 'expense' %}
+                        selected
+                        {% endif %}
+                    >
+                        รายจ่าย
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <div class="mm3-field">
+
+                <label>จำนวนเงิน</label>
+
+                <input
+                    name="amount"
+                    type="number"
+                    min="0.01"
+                    step="0.01"
+                    value="{{ edit_item.amount }}"
+                    required
+                >
+
+            </div>
+
+
+            <div class="mm3-field">
+
+                <label>หมวดหมู่</label>
+
+                <select
+                    name="category"
+                    class="category-select"
+                    data-custom-target="edit-custom"
+                >
+
+                    {% for c in categories %}
+
+                    <option
+                        {% if edit_item.category == c %}
+                        selected
+                        {% endif %}
+                    >
+                        {{ c }}
+                    </option>
+
+                    {% endfor %}
+
+                </select>
+
+
+                <div
+                    id="edit-custom"
+                    class="mm3-custom
+                    {% if edit_item.category not in categories
+                    or edit_item.category == 'อื่น ๆ' %}
+                    show
+                    {% endif %}"
+                >
+
+                    <input
+                        name="custom_category"
+                        value="{{
+                            edit_item.category
+                            if edit_item.category not in categories
+                            or edit_item.category == 'อื่น ๆ'
+                            else ''
+                        }}"
+                        maxlength="60"
+                        placeholder="พิมพ์หมวดหมู่เอง"
+                    >
+
+                </div>
+
+            </div>
+
+
+            <div class="mm3-field">
+
+                <label>วันที่</label>
+
+                <input
+                    name="date"
+                    type="date"
+                    value="{{ edit_item.date }}"
+                    required
+                >
+
+            </div>
+
+
+            <div class="mm3-field full">
+
+                <label>รายละเอียด</label>
+
+                <input
+                    name="description"
+                    maxlength="200"
+                    value="{{ edit_item.description }}"
+                >
+
+            </div>
+
+        </div>
+
+
+        <br>
+
+        <button class="btn mm-primary">
+            บันทึกการแก้ไข
+        </button>
+
+        <a
+            class="btn"
+            href="{{ url_for('page', name='page3') }}"
+        >
+            ยกเลิก
+        </a>
+
+    </form>
+
+</div>
+
+{% endif %}
+
+
+<!-- =====================================================
+     เพิ่มรายการปกติ
+===================================================== -->
+
+<div class="mm3-card">
+
+    <h2>➕ เพิ่มรายการ</h2>
+
+    <form method="post">
+
+        <input
+            type="hidden"
+            name="action"
+            value="add"
+        >
+
+
+        <div class="mm3-form">
+
+            <div class="mm3-field">
+
+                <label>ประเภท</label>
+
+                <select name="type">
+
+                    <option value="income">
+                        💚 รายรับ
+                    </option>
+
+                    <option value="expense">
+                        🔴 รายจ่าย
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <div class="mm3-field">
+
+                <label>จำนวนเงิน</label>
+
+                <input
+                    name="amount"
+                    type="number"
+                    min="0.01"
+                    step="0.01"
+                    placeholder="500"
+                    required
+                >
+
+            </div>
+
+
+            <div class="mm3-field">
+
+                <label>หมวดหมู่</label>
+
+                <select
+                    name="category"
+                    class="category-select"
+                    data-custom-target="add-custom"
+                    required
+                >
+
+                    <option value="">
+                        -- เลือก --
+                    </option>
+
+                    {% for c in categories %}
+
+                    <option>
+                        {{ c }}
+                    </option>
+
+                    {% endfor %}
+
+                </select>
+
+
+                <div
+                    id="add-custom"
+                    class="mm3-custom"
+                >
+
+                    <input
+                        name="custom_category"
+                        maxlength="60"
+                        placeholder="ถ้าเลือก “อื่น ๆ” พิมพ์หมวดหมู่เอง"
+                    >
+
+                </div>
+
+            </div>
+
+
+            <div class="mm3-field">
+
+                <label>วันที่</label>
+
+                <input
+                    name="date"
+                    type="date"
+                    value="{{ today }}"
+                    required
+                >
+
+            </div>
+
+
+            <div class="mm3-field full">
+
+                <label>รายละเอียด</label>
+
+                <input
+                    name="description"
+                    maxlength="200"
+                    placeholder="เช่น ค่าอาหารกลางวัน"
+                >
+
+            </div>
+
+        </div>
+
+
+        <br>
+
+        <button class="btn mm-primary">
+            💾 บันทึกรายการ
+        </button>
+
+    </form>
+
+</div>
+
+
+<!-- =====================================================
+     ค้นหา
+===================================================== -->
+
+<div class="mm3-card">
+
+    <h2>🔎 ค้นหา</h2>
+
+    <form method="get">
+
+        <div class="mm3-filter">
+
+            <input
+                name="search"
+                value="{{ search }}"
+                placeholder="รายละเอียดหรือหมวดหมู่"
+            >
+
+
+            <select name="type">
+
+                <option value="">
+                    ทุกประเภท
+                </option>
+
+                <option
+                    value="income"
+                    {% if type_filter == 'income' %}
+                    selected
+                    {% endif %}
+                >
+                    รายรับ
+                </option>
+
+                <option
+                    value="expense"
+                    {% if type_filter == 'expense' %}
+                    selected
+                    {% endif %}
+                >
+                    รายจ่าย
+                </option>
+
+            </select>
+
+
+            <select name="category">
+
+                <option value="">
+                    ทุกหมวดหมู่
+                </option>
+
+                {% for c in categories %}
+
+                <option
+                    value="{{ c }}"
+                    {% if category_filter == c %}
+                    selected
+                    {% endif %}
+                >
+                    {{ c }}
+                </option>
+
+                {% endfor %}
+
+            </select>
+
+
+            <button class="btn mm-primary">
+                ค้นหา
+            </button>
+
+        </div>
+
+    </form>
+
+</div>
+
+
+<!-- =====================================================
+     รายการทั้งหมด
+===================================================== -->
+
+<div class="mm3-card">
+
+    <h2>📋 รายการทั้งหมด</h2>
+
+    {% if transactions %}
+
+    <div class="table-wrap">
+
+        <table>
+
+            <thead>
+
+                <tr>
+
+                    <th>วันที่</th>
+                    <th>ประเภท</th>
+                    <th>หมวด</th>
+                    <th>รายละเอียด</th>
+                    <th>จำนวน</th>
+                    <th>จัดการ</th>
+
+                </tr>
+
+            </thead>
+
+
+            <tbody>
+
+                {% for x in transactions %}
+
+                <tr>
+
+                    <td>
+                        {{ x.date }}
+                    </td>
+
+
+                    <td>
+
+                        {% if x.type == 'income' %}
+                            รายรับ
+                        {% else %}
+                            รายจ่าย
+                        {% endif %}
+
+                    </td>
+
+
+                    <td>
+                        {{ x.category }}
+                    </td>
+
+
+                    <td>
+                        {{ x.description or '-' }}
+                    </td>
+
+
+                    <td
+                        class="{{
+                            'mm3-income'
+                            if x.type == 'income'
+                            else 'mm3-expense'
+                        }}"
+                    >
+
+                        {{
+                            '+'
+                            if x.type == 'income'
+                            else '-'
+                        }}
+
+                        ฿
+                        {{
+                            "{:,.2f}".format(
+                                x.amount
+                            )
+                        }}
+
+                    </td>
+
+
+                    <td>
+
+                        <div class="mm3-actions">
+
+                            <a
+                                class="btn small"
+                                href="{{
+                                    url_for(
+                                        'page',
+                                        name='page3',
+                                        edit=x.id
+                                    )
+                                }}"
+                            >
+                                ✏️
+                            </a>
+
+
+                            <form
+                                method="post"
+                                onsubmit="return confirm('ลบรายการนี้หรือไม่?')"
+                            >
+
+                                <input
+                                    type="hidden"
+                                    name="action"
+                                    value="delete"
+                                >
+
+                                <input
+                                    type="hidden"
+                                    name="id"
+                                    value="{{ x.id }}"
+                                >
+
+                                <button
+                                    class="btn small danger"
+                                    type="submit"
+                                >
+                                    🗑️
+                                </button>
+
+                            </form>
+
+                        </div>
+
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+    {% else %}
+
+    <p class="note">
+        ยังไม่มีรายการที่ตรงกับเงื่อนไข
+    </p>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}
+
+
+{% block scripts %}
+
+<script>
+
+document
+    .querySelectorAll('.category-select')
+    .forEach(function(sel) {
+
+        function toggle() {
+
+            const box =
+                document.getElementById(
+                    sel.dataset.customTarget
+                );
+
+            if (box) {
+
+                box.classList.toggle(
+                    'show',
+                    sel.value === 'อื่น ๆ'
+                );
+
+            }
+        }
+
+        sel.addEventListener(
+            'change',
+            toggle
+        );
+
+        toggle();
+
+    });
+
+
+/*
+ * สลับฟอร์ม
+ * ครั้งเดียว / ทุกเดือน
+ */
+
+const frequencyInputs =
+    document.querySelectorAll(
+        'input[name="recurring_frequency"]'
+    );
+
+const onceBox =
+    document.getElementById(
+        'recurring-once'
+    );
+
+const monthlyBox =
+    document.getElementById(
+        'recurring-monthly'
+    );
+
+
+function updateRecurringForm() {
+
+    const selected =
+        document.querySelector(
+            'input[name="recurring_frequency"]:checked'
+        );
+
+    if (!selected) {
+        return;
+    }
+
+    if (selected.value === 'monthly') {
+
+        onceBox.style.display = 'none';
+        monthlyBox.style.display = 'flex';
+
+    } else {
+
+        onceBox.style.display = 'flex';
+        monthlyBox.style.display = 'none';
+
+    }
+}
+
+
+frequencyInputs.forEach(function(input) {
+
+    input.addEventListener(
+        'change',
+        updateRecurringForm
+    );
+
+});
+
+
+updateRecurringForm();
+
+</script>
+
+{% endblock %}

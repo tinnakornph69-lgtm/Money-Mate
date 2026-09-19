@@ -1,0 +1,38 @@
+{% extends "_money_base.html" %}
+{% block head %}
+<style>
+.if-hero{background:linear-gradient(135deg,#7a1f2b,#9a3040);color:#fff;border-radius:18px;padding:26px;margin-bottom:16px}
+.if-card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:22px;margin-bottom:16px}
+.if-form{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.if-form label{display:block;font-size:13px;font-weight:700}
+.if-form input{width:100%;padding:10px;margin-top:6px;border:1px solid #cbd5e1;border-radius:9px;font:inherit}
+.if-result{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.if-result>div{background:#f8f5f1;border-radius:12px;padding:16px}
+.if-result strong{display:block;font-size:23px;color:var(--maroon)}
+@media(max-width:700px){.if-form,.if-result{grid-template-columns:1fr}}
+</style>
+{% endblock %}
+{% block content %}
+<section class="if-hero">
+  <h1>🔮 IF Simulator</h1>
+  <p>ลองตั้งสถานการณ์ “ถ้า...” เพื่อดูว่าเงินจะเหลือเท่าไร โดยไม่กระทบข้อมูลจริง</p>
+</section>
+<section class="if-card">
+  <h2 style="margin-top:0">สมมติสถานการณ์</h2>
+  <form method="get" class="if-form">
+    <label>ถ้ามีรายรับ<input name="income" type="number" min="0" step="0.01" value="{{ income }}" placeholder="15000"></label>
+    <label>ถ้ามีรายจ่าย<input name="expense" type="number" min="0" step="0.01" value="{{ expense }}" placeholder="8000"></label>
+    <label>ถ้าต้องจ่ายเพิ่ม<input name="extra" type="number" min="0" step="0.01" value="{{ extra }}" placeholder="2000"></label>
+    <div><button class="btn mm-primary" type="submit">คำนวณสถานการณ์</button></div>
+  </form>
+</section>
+<section class="if-card">
+  <h2 style="margin-top:0">ผลจำลอง</h2>
+  <div class="if-result">
+    <div><span>เงินเหลือก่อนจ่ายเพิ่ม</span><strong>฿ {{ "{:,.2f}".format(balance) }}</strong></div>
+    <div><span>เงินเหลือหลังจ่ายเพิ่ม</span><strong>฿ {{ "{:,.2f}".format(after) }}</strong></div>
+    <div><span>สถานะ</span><strong style="font-size:16px">{{ status }}</strong></div>
+  </div>
+  <p class="note">การคำนวณนี้เป็นการจำลองเท่านั้น ไม่แก้ไขรายการเงินจริง</p>
+</section>
+{% endblock %}

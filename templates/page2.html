@@ -1,0 +1,964 @@
+{% extends "_money_base.html" %}
+
+{% block head %}
+
+<style>
+
+/* =========================
+   DASHBOARD
+========================= */
+
+.mm-dash-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+}
+
+.mm-dash-card {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 20px;
+}
+
+.mm-dash-card span {
+    color: var(--muted);
+    font-size: 13px;
+}
+
+.mm-dash-card strong {
+    display: block;
+    font-size: 25px;
+    margin-top: 5px;
+}
+
+.mm-income {
+    color: #247a48;
+}
+
+.mm-expense {
+    color: #a32626;
+}
+
+.mm-balance {
+    color: var(--maroon);
+}
+
+
+/* =========================
+   PANEL
+========================= */
+
+.mm-two {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+}
+
+.mm-panel {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 22px;
+    margin-top: 14px;
+}
+
+.mm-panel h2 {
+    margin-top: 0;
+}
+
+.mm-mini-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 9px 0;
+    border-bottom: 1px solid var(--line);
+}
+
+.mm-mini-row:last-child {
+    border-bottom: 0;
+}
+
+.mm-empty {
+    color: var(--muted);
+    padding: 20px 0;
+}
+
+
+/* =========================
+   PIE CHART AREA
+========================= */
+
+.mm-chart-pair {
+    margin-top: 0;
+}
+
+.mm-chart-panel {
+    min-width: 0;
+}
+
+
+/*
+   วงกลม + รายการ
+   ซ้าย = Pie
+   ขวา = รายการ
+*/
+
+.mm-chart-box {
+    display: grid;
+    grid-template-columns: 230px minmax(260px, 1fr);
+    align-items: center;
+    gap: 28px;
+    margin-top: 20px;
+}
+
+
+/* =========================
+   PIE
+========================= */
+
+.mm-pie {
+    width: 220px;
+    height: 220px;
+
+    margin: 0 auto;
+
+    border-radius: 50%;
+
+    position: relative;
+
+    background: conic-gradient(
+        var(--pie-gradient)
+    );
+
+    flex-shrink: 0;
+}
+
+
+/* รูตรงกลาง */
+
+.mm-pie::after {
+    content: "";
+
+    position: absolute;
+
+    inset: 55px;
+
+    border-radius: 50%;
+
+    background: #fff;
+
+    box-shadow:
+        0 0 0 1px var(--line);
+}
+
+
+/* ตัวหนังสือตรงกลาง */
+
+.mm-pie-center {
+    position: absolute;
+
+    inset: 0;
+
+    z-index: 2;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    text-align: center;
+
+    pointer-events: none;
+}
+
+.mm-pie-center > div {
+    width: 120px;
+}
+
+.mm-pie-center span {
+    display: block;
+
+    font-size: 12px;
+
+    line-height: 1.4;
+
+    color: var(--muted);
+
+    margin-bottom: 4px;
+}
+
+.mm-pie-center strong {
+    display: block;
+
+    font-size: 15px;
+
+    line-height: 1.3;
+
+    white-space: nowrap;
+}
+
+
+/* =========================
+   CATEGORY LIST
+========================= */
+
+.mm-category-list {
+    width: 100%;
+
+    max-height: 280px;
+
+    overflow-y: auto;
+
+    padding-right: 4px;
+
+    box-sizing: border-box;
+}
+
+
+/* แต่ละแถว
+
+   จุดสี | ชื่อหมวด | จำนวนเงิน
+
+*/
+
+.mm-category-row {
+    display: grid;
+
+    grid-template-columns:
+        12px
+        minmax(0, 1fr)
+        105px;
+
+    align-items: center;
+
+    column-gap: 10px;
+
+    min-height: 54px;
+
+    padding: 8px 0;
+
+    border-bottom: 1px solid var(--line);
+
+    box-sizing: border-box;
+}
+
+.mm-category-row:last-child {
+    border-bottom: 0;
+}
+
+
+/* =========================
+   จุดสี
+========================= */
+
+.mm-dot {
+    width: 10px;
+
+    height: 10px;
+
+    border-radius: 50%;
+
+    background: var(--dot-color);
+
+    flex-shrink: 0;
+}
+
+
+/* =========================
+   ชื่อหมวด
+========================= */
+
+.mm-category-name {
+    min-width: 0;
+
+    overflow: hidden;
+}
+
+.mm-category-name strong {
+    display: block;
+
+    font-size: 14px;
+
+    line-height: 1.4;
+
+    font-weight: 600;
+
+    white-space: nowrap;
+
+    overflow: hidden;
+
+    text-overflow: ellipsis;
+}
+
+.mm-category-name small {
+    display: block;
+
+    margin-top: 2px;
+
+    font-size: 11px;
+
+    line-height: 1.3;
+
+    color: var(--muted);
+}
+
+
+/* =========================
+   จำนวนเงิน
+========================= */
+
+.mm-category-amount {
+    width: 105px;
+
+    text-align: right;
+
+    justify-self: end;
+
+    white-space: nowrap;
+}
+
+.mm-category-amount strong {
+    display: block;
+
+    font-size: 14px;
+
+    line-height: 1.4;
+
+    font-weight: 600;
+
+    font-variant-numeric: tabular-nums;
+}
+
+.mm-category-amount small {
+    display: block;
+
+    margin-top: 2px;
+
+    font-size: 11px;
+
+    line-height: 1.3;
+
+    color: var(--muted);
+
+    font-variant-numeric: tabular-nums;
+}
+
+
+/* =========================
+   COLORS
+========================= */
+
+.mm-color-0 {
+    --dot-color: #7b1e2b;
+}
+
+.mm-color-1 {
+    --dot-color: #c85c5c;
+}
+
+.mm-color-2 {
+    --dot-color: #e0a458;
+}
+
+.mm-color-3 {
+    --dot-color: #5b8c85;
+}
+
+.mm-color-4 {
+    --dot-color: #5870a8;
+}
+
+.mm-color-5 {
+    --dot-color: #8b6f9d;
+}
+
+.mm-color-6 {
+    --dot-color: #6b8e5e;
+}
+
+.mm-color-7 {
+    --dot-color: #9a7b4f;
+}
+
+
+/* =========================
+   MOBILE
+========================= */
+
+@media (max-width: 1100px) {
+
+    .mm-chart-box {
+        grid-template-columns: 1fr;
+
+        gap: 20px;
+    }
+
+    .mm-pie {
+        margin: 0 auto;
+    }
+
+    .mm-category-list {
+        max-width: 500px;
+
+        margin: 0 auto;
+    }
+
+}
+
+
+@media (max-width: 800px) {
+
+    .mm-dash-grid {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .mm-two {
+        grid-template-columns: 1fr;
+    }
+
+}
+
+
+@media (max-width: 500px) {
+
+    .mm-dash-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .mm-chart-box {
+        gap: 18px;
+    }
+
+    .mm-pie {
+        width: 190px;
+
+        height: 190px;
+    }
+
+    .mm-pie::after {
+        inset: 48px;
+    }
+
+    .mm-category-row {
+        grid-template-columns:
+            10px
+            minmax(0, 1fr)
+            95px;
+
+        column-gap: 8px;
+
+        min-height: 50px;
+    }
+
+    .mm-category-amount {
+        width: 95px;
+    }
+
+    .mm-category-name strong {
+        font-size: 13px;
+    }
+
+    .mm-category-amount strong {
+        font-size: 13px;
+    }
+
+    .mm-category-name small,
+    .mm-category-amount small {
+        font-size: 10px;
+    }
+
+}
+
+</style>
+
+{% endblock %}
+
+
+{% block content %}
+
+
+<!-- =========================
+     HEADER
+========================= -->
+
+<div class="hero-box">
+
+    <h1>📊 Dashboard</h1>
+
+    <p class="note">
+        ภาพรวมการเงินทั้งหมดและสรุปของเดือนปัจจุบัน
+    </p>
+
+</div>
+
+
+<!-- =========================
+     SUMMARY
+========================= -->
+
+<div class="mm-dash-grid">
+
+    <div class="mm-dash-card">
+
+        <span>รายรับทั้งหมด</span>
+
+        <strong class="mm-income">
+            ฿ {{ "{:,.2f}".format(income) }}
+        </strong>
+
+    </div>
+
+
+    <div class="mm-dash-card">
+
+        <span>รายจ่ายทั้งหมด</span>
+
+        <strong class="mm-expense">
+            ฿ {{ "{:,.2f}".format(expense) }}
+        </strong>
+
+    </div>
+
+
+    <div class="mm-dash-card">
+
+        <span>คงเหลือ</span>
+
+        <strong class="mm-balance">
+            ฿ {{ "{:,.2f}".format(balance) }}
+        </strong>
+
+    </div>
+
+
+    <div class="mm-dash-card">
+
+        <span>จำนวนรายการ</span>
+
+        <strong>
+            {{ count }}
+        </strong>
+
+    </div>
+
+</div>
+
+
+<!-- =========================
+     MONTH
+========================= -->
+
+<div class="mm-two">
+
+    <div class="mm-panel">
+
+        <h2>📅 เดือนนี้</h2>
+
+        <div class="mm-mini-row">
+
+            <span>รายรับ</span>
+
+            <b class="mm-income">
+                ฿ {{ "{:,.2f}".format(month_income) }}
+            </b>
+
+        </div>
+
+
+        <div class="mm-mini-row">
+
+            <span>รายจ่าย</span>
+
+            <b class="mm-expense">
+                ฿ {{ "{:,.2f}".format(month_expense) }}
+            </b>
+
+        </div>
+
+
+        <div class="mm-mini-row">
+
+            <span>เหลือ</span>
+
+            <b>
+                ฿ {{ "{:,.2f}".format(month_balance) }}
+            </b>
+
+        </div>
+
+    </div>
+
+
+    <div class="mm-panel">
+
+        <h2>🏷️ หมวดที่ใช้มาก</h2>
+
+        {% if top_categories %}
+
+            {% for item in top_categories %}
+
+                <div class="mm-mini-row">
+
+                    <span>
+                        {{ item.name }}
+                    </span>
+
+                    <b class="mm-expense">
+                        ฿ {{ "{:,.2f}".format(item.value) }}
+                    </b>
+
+                </div>
+
+            {% endfor %}
+
+        {% else %}
+
+            <div class="mm-empty">
+                ยังไม่มีรายจ่ายเดือนนี้
+            </div>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+
+<!-- =====================================================
+     กราฟ 2 วง
+===================================================== -->
+
+<div class="mm-two mm-chart-pair">
+
+
+    <!-- =========================
+         รายรับ
+    ========================= -->
+
+    <div class="mm-panel">
+
+        <h2>💰 สัดส่วนรายรับ</h2>
+
+        <p class="note">
+            รายรับเดือนนี้มาจากหมวดไหนบ้าง
+        </p>
+
+
+        {% if income_breakdown %}
+
+        <div class="mm-chart-box">
+
+
+            <!-- PIE -->
+
+            <div>
+
+                <div
+                    class="mm-pie"
+                    style="
+                        --pie-gradient:
+                        {{ income_pie_gradient }};
+                    "
+                >
+
+                    <div class="mm-pie-center">
+
+                        <div>
+
+                            <span>
+                                รายรับเดือนนี้
+                            </span>
+
+                            <strong class="mm-income">
+                                ฿ {{ "{:,.2f}".format(income_total) }}
+                            </strong>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- รายการหมวด -->
+
+            <div class="mm-category-list">
+
+                {% for item in income_breakdown %}
+
+                <div class="mm-category-row">
+
+                    <span
+                        class="
+                            mm-dot
+                            mm-color-{{ item.index % 8 }}
+                        "
+                    ></span>
+
+
+                    <div class="mm-category-name">
+
+                        <strong>
+                            {{ item.name }}
+                        </strong>
+
+                        <small>
+                            {{ "{:.1f}".format(item.percentage) }}%
+                            ของรายรับ
+                        </small>
+
+                    </div>
+
+
+                    <div class="mm-category-amount">
+
+                        <strong class="mm-income">
+
+                            ฿ {{ "{:,.2f}".format(item.value) }}
+
+                        </strong>
+
+                        <small>
+
+                            {{ "{:.1f}".format(item.percentage) }}%
+
+                        </small>
+
+                    </div>
+
+                </div>
+
+                {% endfor %}
+
+            </div>
+
+        </div>
+
+
+        {% else %}
+
+            <div class="mm-empty">
+                ยังไม่มีรายรับเดือนนี้
+            </div>
+
+        {% endif %}
+
+    </div>
+
+
+
+    <!-- =========================
+         รายจ่าย
+    ========================= -->
+
+    <div class="mm-panel">
+
+        <h2>💸 สัดส่วนรายจ่าย</h2>
+
+        <p class="note">
+            เงินเดือนนี้หมดไปกับหมวดไหนบ้าง
+        </p>
+
+
+        {% if expense_breakdown %}
+
+        <div class="mm-chart-box">
+
+
+            <!-- PIE -->
+
+            <div>
+
+                <div
+                    class="mm-pie"
+                    style="
+                        --pie-gradient:
+                        {{ expense_pie_gradient }};
+                    "
+                >
+
+                    <div class="mm-pie-center">
+
+                        <div>
+
+                            <span>
+                                รายจ่ายเดือนนี้
+                            </span>
+
+                            <strong class="mm-expense">
+
+                                ฿ {{ "{:,.2f}".format(expense_total) }}
+
+                            </strong>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- รายการหมวด -->
+
+            <div class="mm-category-list">
+
+                {% for item in expense_breakdown %}
+
+                <div class="mm-category-row">
+
+                    <span
+                        class="
+                            mm-dot
+                            mm-color-{{ item.index % 8 }}
+                        "
+                    ></span>
+
+
+                    <div class="mm-category-name">
+
+                        <strong>
+                            {{ item.name }}
+                        </strong>
+
+                        <small>
+                            {{ "{:.1f}".format(item.percentage) }}%
+                            ของรายจ่าย
+                        </small>
+
+                    </div>
+
+
+                    <div class="mm-category-amount">
+
+                        <strong class="mm-expense">
+
+                            ฿ {{ "{:,.2f}".format(item.value) }}
+
+                        </strong>
+
+                        <small>
+
+                            {{ "{:.1f}".format(item.percentage) }}%
+
+                        </small>
+
+                    </div>
+
+                </div>
+
+                {% endfor %}
+
+            </div>
+
+        </div>
+
+
+        {% else %}
+
+            <div class="mm-empty">
+                ยังไม่มีรายจ่ายเดือนนี้
+            </div>
+
+        {% endif %}
+
+    </div>
+
+</div>
+
+
+<!-- =========================
+     รายการล่าสุด
+========================= -->
+
+<div class="mm-panel">
+
+    <h2>🕘 รายการล่าสุด</h2>
+
+
+    {% if recent %}
+
+    <div class="table-wrap">
+
+        <table>
+
+            <thead>
+
+                <tr>
+
+                    <th>วันที่</th>
+
+                    <th>รายการ</th>
+
+                    <th>หมวด</th>
+
+                    <th>จำนวน</th>
+
+                </tr>
+
+            </thead>
+
+
+            <tbody>
+
+                {% for x in recent %}
+
+                <tr>
+
+                    <td>
+                        {{ x.date }}
+                    </td>
+
+                    <td>
+                        {{ x.description or '-' }}
+                    </td>
+
+                    <td>
+                        {{ x.category }}
+                    </td>
+
+                    <td
+                        class="
+                            {{ 'mm-income'
+                               if x.type == 'income'
+                               else 'mm-expense' }}
+                        "
+                    >
+
+                        {{ '+' if x.type == 'income' else '-' }}
+
+                        ฿ {{ "{:,.2f}".format(x.amount) }}
+
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+
+    {% else %}
+
+    <div class="mm-empty">
+
+        ยังไม่มีข้อมูล —
+        ไปที่หน้า “รายรับ-รายจ่าย”
+        เพื่อเริ่มบันทึก
+
+    </div>
+
+    {% endif %}
+
+</div>
+
+{% endblock %}

@@ -1,0 +1,1038 @@
+{% extends "_money_base.html" %}
+
+{% block head %}
+<style>
+/* =========================
+   พื้นที่หลัก
+========================= */
+.auth-viewport {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  border: 1px solid #f0ded4;
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at 15% 20%, rgba(255,255,255,.95), transparent 30%),
+    linear-gradient(135deg, #fffaf6 0%, #fff3ed 50%, #ffe8df 100%);
+  box-shadow: 0 18px 50px rgba(100, 37, 41, .10);
+}
+
+.auth-viewport::before,
+.auth-viewport::after {
+  content: "";
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+.auth-viewport::before {
+  width: 240px;
+  height: 240px;
+  top: -130px;
+  right: -90px;
+  background: rgba(255, 178, 159, .20);
+}
+
+.auth-viewport::after {
+  width: 200px;
+  height: 200px;
+  left: -100px;
+  bottom: -100px;
+  background: rgba(255, 211, 161, .22);
+}
+
+/* =========================
+   ส่วนที่เลื่อนซ้าย–ขวา
+========================= */
+.auth-slider {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(2, 50%);
+  width: 200%;
+  transition:
+    transform .75s cubic-bezier(.22, 1, .36, 1),
+    height .35s ease;
+  will-change: transform;
+}
+
+.auth-slider.show-register {
+  transform: translateX(-50%);
+}
+
+.auth-panel {
+  position: relative;
+  width: 100%;
+  min-height: 650px;
+  padding: 34px;
+  display: grid;
+  grid-template-columns: minmax(280px, .9fr) minmax(360px, 1.1fr);
+  gap: 34px;
+  align-items: center;
+}
+
+/* =========================
+   ฝั่งน้อง Mate
+========================= */
+.mate-zone {
+  position: relative;
+  min-height: 520px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  isolation: isolate;
+}
+
+.mate-zone::before {
+  content: "";
+  position: absolute;
+  width: 82%;
+  height: 82%;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(255,255,255,.94) 0%,
+    rgba(255,244,235,.75) 52%,
+    rgba(255,228,215,0) 75%
+  );
+  z-index: -2;
+}
+
+.mate-zone::after {
+  content: "";
+  position: absolute;
+  width: 250px;
+  height: 38px;
+  bottom: 55px;
+  border-radius: 50%;
+  background: rgba(119, 59, 41, .13);
+  filter: blur(13px);
+  z-index: -1;
+  animation: mate-shadow 3.4s ease-in-out infinite;
+}
+
+.mate-character {
+  display: block;
+  width: min(100%, 410px);
+  height: auto;
+  user-select: none;
+  pointer-events: none;
+  filter: drop-shadow(0 18px 20px rgba(130, 71, 42, .17));
+  transform-origin: center bottom;
+  animation: mate-float 3.4s ease-in-out infinite;
+}
+
+.register-panel .mate-character {
+  width: min(92%, 350px);
+  animation-delay: -.8s;
+}
+
+/* =========================
+   กล่องข้อความน้อง Mate
+========================= */
+.mate-message {
+  position: absolute;
+  top: 44px;
+  left: 10px;
+  max-width: 180px;
+  padding: 15px 18px;
+  color: #7e202d;
+  background: rgba(255,255,255,.93);
+  border: 1px solid #f2d4cc;
+  border-radius: 24px;
+  font-size: 16px;
+  font-weight: 700;
+  line-height: 1.55;
+  text-align: center;
+  box-shadow: 0 12px 30px rgba(95, 36, 40, .09);
+  animation: message-float 3.8s ease-in-out infinite;
+}
+
+.mate-message::after {
+  content: "";
+  position: absolute;
+  right: 20px;
+  bottom: -10px;
+  width: 20px;
+  height: 20px;
+  background: #fff;
+  border-right: 1px solid #f2d4cc;
+  border-bottom: 1px solid #f2d4cc;
+  transform: rotate(45deg);
+}
+
+.register-panel .mate-message {
+  left: auto;
+  right: 5px;
+}
+
+/* =========================
+   หัวใจและประกาย
+========================= */
+.mate-heart,
+.mate-glint {
+  position: absolute;
+  pointer-events: none;
+}
+
+.mate-heart {
+  color: #ed415b;
+  filter: drop-shadow(0 5px 6px rgba(190, 43, 67, .18));
+  animation: heart-float 3s ease-in-out infinite;
+}
+
+.heart-1 {
+  left: 10%;
+  top: 27%;
+  font-size: 33px;
+}
+
+.heart-2 {
+  right: 7%;
+  top: 22%;
+  font-size: 25px;
+  animation-delay: -1.1s;
+}
+
+.heart-3 {
+  right: 14%;
+  bottom: 24%;
+  font-size: 18px;
+  animation-delay: -2s;
+}
+
+.mate-glint {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #ffc34f;
+  box-shadow: 0 0 0 5px rgba(255,195,79,.16);
+  animation: glint 2.3s ease-in-out infinite;
+}
+
+.glint-1 {
+  left: 19%;
+  top: 39%;
+}
+
+.glint-2 {
+  right: 20%;
+  top: 42%;
+  animation-delay: -1.2s;
+}
+
+/* =========================
+   การ์ดเข้าสู่ระบบ
+========================= */
+.auth-card {
+  position: relative;
+  width: 100%;
+  max-width: 540px;
+  margin: auto;
+  padding: 38px;
+  border: 1px solid rgba(232, 198, 187, .85);
+  border-radius: 25px;
+  background: rgba(255,255,255,.94);
+  box-shadow: 0 20px 50px rgba(91, 33, 38, .11);
+  backdrop-filter: blur(10px);
+}
+
+.auth-card-header {
+  margin-bottom: 25px;
+  text-align: center;
+}
+
+.auth-card-header h1 {
+  margin: 0 0 7px;
+  color: #8e2534;
+  font-size: clamp(32px, 4vw, 46px);
+  line-height: 1.15;
+}
+
+.auth-card-header p {
+  margin: 0;
+  color: #596273;
+  font-size: 16px;
+}
+
+/* =========================
+   ช่องกรอกข้อมูล
+========================= */
+.auth-field {
+  display: block;
+  margin-bottom: 17px;
+}
+
+.auth-field > span {
+  display: block;
+  margin-bottom: 7px;
+  color: #555f70;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.auth-input-wrap {
+  position: relative;
+}
+
+.auth-input-icon {
+  position: absolute;
+  top: 50%;
+  left: 15px;
+  z-index: 1;
+  color: #778195;
+  font-size: 20px;
+  transform: translateY(-50%);
+  pointer-events: none;
+}
+
+.auth-input-wrap input {
+  width: 100%;
+  min-height: 52px;
+  padding: 12px 48px;
+  border: 1px solid #d7dde6;
+  border-radius: 12px;
+  background: #fff;
+  color: #263143;
+  font: inherit;
+  transition:
+    border-color .2s ease,
+    box-shadow .2s ease,
+    transform .2s ease;
+}
+
+.auth-input-wrap input::placeholder {
+  color: #9aa3b2;
+}
+
+.auth-input-wrap input:focus {
+  outline: none;
+  border-color: #b32c42;
+  box-shadow: 0 0 0 4px rgba(179,44,66,.12);
+  transform: translateY(-1px);
+}
+
+.password-toggle {
+  position: absolute;
+  top: 50%;
+  right: 12px;
+  padding: 5px;
+  border: 0;
+  background: transparent;
+  color: #778195;
+  font-size: 19px;
+  cursor: pointer;
+  transform: translateY(-50%);
+}
+
+/* =========================
+   ปุ่ม
+========================= */
+.auth-submit {
+  width: 100%;
+  min-height: 52px;
+  margin-top: 8px;
+  border: 0;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #b42b42, #8f1f30);
+  color: #fff;
+  font-size: 17px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 10px 22px rgba(151, 31, 50, .22);
+  transition:
+    transform .2s ease,
+    box-shadow .2s ease,
+    filter .2s ease;
+}
+
+.auth-submit:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 28px rgba(151, 31, 50, .28);
+  filter: brightness(1.05);
+}
+
+.auth-submit:active {
+  transform: translateY(0);
+}
+
+.auth-change {
+  margin-top: 25px;
+  color: #526071;
+  text-align: center;
+}
+
+.auth-link {
+  padding: 5px 7px;
+  border: 0;
+  background: transparent;
+  color: #a02135;
+  font: inherit;
+  font-weight: 800;
+  text-decoration: underline;
+  cursor: pointer;
+  transition: color .2s ease, transform .2s ease;
+}
+
+.auth-link:hover {
+  color: #d1304c;
+}
+
+.back-login {
+  position: absolute;
+  top: 24px;
+  left: 27px;
+  z-index: 4;
+  padding: 9px 14px;
+  border: 0;
+  border-radius: 10px;
+  background: rgba(255,255,255,.75);
+  color: #8f2233;
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+  transition: background .2s ease, transform .2s ease;
+}
+
+.back-login:hover {
+  background: #fff;
+  transform: translateX(-3px);
+}
+
+/* =========================
+   Animation
+========================= */
+@keyframes mate-float {
+  0%, 100% {
+    transform: translateY(3px) rotate(-1deg);
+  }
+  50% {
+    transform: translateY(-13px) rotate(1deg);
+  }
+}
+
+@keyframes mate-shadow {
+  0%, 100% {
+    opacity: .65;
+    transform: scaleX(.95);
+  }
+  50% {
+    opacity: .38;
+    transform: scaleX(.77);
+  }
+}
+
+@keyframes message-float {
+  0%, 100% {
+    transform: translateY(1px);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes heart-float {
+  0%, 100% {
+    opacity: .72;
+    transform: translateY(4px) scale(.9) rotate(-7deg);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(-13px) scale(1.08) rotate(7deg);
+  }
+}
+
+@keyframes glint {
+  0%, 100% {
+    opacity: .25;
+    transform: scale(.5);
+  }
+  45% {
+    opacity: 1;
+    transform: scale(1.3);
+  }
+}
+
+/* =========================
+   หน้าจอขนาดเล็ก
+========================= */
+@media (max-width: 900px) {
+  .auth-panel {
+    min-height: auto;
+    padding: 24px;
+    grid-template-columns: 1fr;
+    gap: 5px;
+  }
+
+  .mate-zone {
+    min-height: 310px;
+  }
+
+  .mate-character {
+    width: min(75%, 290px);
+  }
+
+  .mate-zone::after {
+    bottom: 25px;
+    width: 190px;
+  }
+
+  .mate-message {
+    top: 20px;
+    left: 4%;
+    max-width: 155px;
+    font-size: 14px;
+  }
+
+  .register-panel .mate-message {
+    right: 4%;
+  }
+
+  .back-login {
+    top: 15px;
+    left: 15px;
+  }
+}
+
+@media (max-width: 600px) {
+  .auth-viewport {
+    border-radius: 17px;
+  }
+
+  .auth-panel {
+    padding: 16px;
+  }
+
+  .mate-zone {
+    min-height: 255px;
+  }
+
+  .mate-character {
+    width: min(72%, 230px);
+  }
+
+  .mate-message {
+    max-width: 125px;
+    padding: 10px 12px;
+    font-size: 12px;
+  }
+
+  .auth-card {
+    padding: 27px 20px;
+    border-radius: 19px;
+  }
+
+  .auth-card-header h1 {
+    font-size: 34px;
+  }
+
+  .heart-1 {
+    left: 4%;
+  }
+
+  .heart-2 {
+    right: 3%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .auth-slider,
+  .mate-character,
+  .mate-zone::after,
+  .mate-message,
+  .mate-heart,
+  .mate-glint {
+    animation: none;
+    transition: none;
+  }
+}
+
+/* =========================
+   หน้าบัญชีผู้ใช้
+========================= */
+.account-profile-page {
+  max-width: 760px;
+  margin: 20px auto;
+  padding: 30px;
+  border: 1px solid #efd8d1;
+  border-radius: 24px;
+  background: linear-gradient(145deg, #fff 0%, #fff8f4 100%);
+  box-shadow: 0 18px 45px rgba(100, 37, 41, .10);
+}
+.account-profile-head {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding-bottom: 22px;
+  border-bottom: 1px solid #f0ded8;
+}
+.account-profile-avatar {
+  width: 76px;
+  height: 76px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: #fff;
+  background: linear-gradient(135deg, #7b1e2b, #bd2f49);
+  font-size: 34px;
+  font-weight: 800;
+  box-shadow: 0 10px 24px rgba(123, 30, 43, .22);
+}
+.account-profile-head h1 { margin: 0 0 5px; color: #7b1e2b; }
+.account-profile-head p { margin: 0; color: #687386; }
+.account-profile-info {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  margin: 22px 0;
+}
+.account-info-card {
+  padding: 16px 18px;
+  border: 1px solid #ecdcd6;
+  border-radius: 15px;
+  background: #fff;
+}
+.account-info-card small { display: block; margin-bottom: 5px; color: #7b8493; }
+.account-info-card strong { color: #293548; font-size: 17px; overflow-wrap: anywhere; }
+.password-card {
+  padding: 22px;
+  border: 1px solid #ecdcd6;
+  border-radius: 18px;
+  background: #fff;
+}
+.password-card h2 { margin: 0 0 6px; color: #7b1e2b; }
+.password-card > p { margin: 0 0 18px; color: #687386; }
+.password-form { display: grid; gap: 15px; }
+.password-form label { display: grid; gap: 7px; color: #354154; font-weight: 700; }
+.password-form input {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid #ccd3dd;
+  border-radius: 11px;
+  font: inherit;
+}
+.password-form input:focus {
+  outline: 0;
+  border-color: #a6253b;
+  box-shadow: 0 0 0 3px rgba(166, 37, 59, .12);
+}
+.password-save {
+  margin-top: 4px;
+  padding: 13px 20px;
+  border: 0;
+  border-radius: 12px;
+  color: #fff;
+  background: linear-gradient(135deg, #8a2031, #bd2f49);
+  font: inherit;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 10px 22px rgba(138, 32, 49, .20);
+}
+.password-save:hover { transform: translateY(-1px); }
+@media (max-width: 620px) {
+  .account-profile-page { padding: 20px; margin: 8px auto; }
+  .account-profile-info { grid-template-columns: 1fr; }
+  .account-profile-head { align-items: flex-start; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+{% if current_user %}
+<section class="account-profile-page">
+  <header class="account-profile-head">
+    <div class="account-profile-avatar" aria-hidden="true">
+      {{ (profile.username if profile else current_user)[:1] | upper }}
+    </div>
+    <div>
+      <h1>บัญชีของคุณ</h1>
+      <p>ตรวจสอบชื่อผู้ใช้และจัดการรหัสผ่าน</p>
+    </div>
+  </header>
+
+  <div class="account-profile-info">
+    <div class="account-info-card">
+      <small>ชื่อผู้ใช้ (Username)</small>
+      <strong>{{ profile.username if profile else current_user }}</strong>
+    </div>
+    <div class="account-info-card">
+      <small>วันที่สร้างบัญชี</small>
+      <strong>{{ profile.created_at if profile and profile.created_at else 'ไม่ระบุ' }}</strong>
+    </div>
+  </div>
+
+  <div class="password-card">
+    <h2>🔐 เปลี่ยนรหัสผ่าน</h2>
+    <p>กรอกรหัสผ่านปัจจุบันก่อนตั้งรหัสผ่านใหม่</p>
+    <form method="post" class="password-form" id="changePasswordForm">
+      <input type="hidden" name="action" value="change_password">
+      <label>
+        รหัสผ่านปัจจุบัน
+        <input type="password" name="current_password" required autocomplete="current-password">
+      </label>
+      <label>
+        รหัสผ่านใหม่
+        <input type="password" name="new_password" id="newAccountPassword" minlength="6" required autocomplete="new-password">
+      </label>
+      <label>
+        ยืนยันรหัสผ่านใหม่
+        <input type="password" name="confirm_password" id="confirmAccountPassword" minlength="6" required autocomplete="new-password">
+      </label>
+      <button type="submit" class="password-save">บันทึกรหัสผ่านใหม่</button>
+    </form>
+  </div>
+</section>
+{% else %}
+<div class="auth-viewport">
+
+  <div class="auth-slider" id="authSlider">
+
+    <!-- =====================
+         หน้าเข้าสู่ระบบ
+    ====================== -->
+    <section
+      class="auth-panel login-panel"
+      id="loginPanel"
+      aria-hidden="false"
+    >
+      <div class="mate-zone">
+        <div class="mate-message">
+          ยินดีต้อนรับกลับมานะ ♥
+        </div>
+
+        <span class="mate-heart heart-1" aria-hidden="true">♥</span>
+        <span class="mate-heart heart-2" aria-hidden="true">♥</span>
+        <span class="mate-heart heart-3" aria-hidden="true">♥</span>
+
+        <span class="mate-glint glint-1" aria-hidden="true"></span>
+        <span class="mate-glint glint-2" aria-hidden="true"></span>
+
+        <img
+          class="mate-character"
+          src="{{ url_for('static', filename='img/mate-login.png') }}"
+          alt="น้อง Mate โบกมือทักทาย"
+        >
+      </div>
+
+      <div class="auth-card">
+        <header class="auth-card-header">
+          <h1>เข้าสู่ระบบ</h1>
+          <p>ลงชื่อเข้าใช้เพื่อจัดการการออมกับน้อง Mate</p>
+        </header>
+
+        <form method="post">
+          <input type="hidden" name="action" value="login">
+
+          <label class="auth-field">
+            <span>ชื่อผู้ใช้</span>
+
+            <div class="auth-input-wrap">
+              <span class="auth-input-icon" aria-hidden="true">♙</span>
+
+              <input
+                type="text"
+                name="username"
+                required
+                autocomplete="username"
+                placeholder="ชื่อผู้ใช้"
+              >
+            </div>
+          </label>
+
+          <label class="auth-field">
+            <span>รหัสผ่าน</span>
+
+            <div class="auth-input-wrap">
+              <span class="auth-input-icon" aria-hidden="true">♙</span>
+
+              <input
+                type="password"
+                name="password"
+                id="loginPassword"
+                required
+                autocomplete="current-password"
+                placeholder="รหัสผ่าน"
+              >
+
+              <button
+                type="button"
+                class="password-toggle"
+                data-password-target="loginPassword"
+                aria-label="แสดงหรือซ่อนรหัสผ่าน"
+              >
+                ◉
+              </button>
+            </div>
+          </label>
+
+          <button class="auth-submit" type="submit">
+            เข้าสู่ระบบ
+          </button>
+        </form>
+
+        <div class="auth-change">
+          ยังไม่มีบัญชี?
+
+          <button
+            type="button"
+            class="auth-link"
+            id="showRegister"
+          >
+            สมัครสมาชิก →
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- =====================
+         หน้าสมัครสมาชิก
+    ====================== -->
+    <section
+      class="auth-panel register-panel"
+      id="registerPanel"
+      aria-hidden="true"
+    >
+      <button
+        type="button"
+        class="back-login"
+        id="showLogin"
+      >
+        ← กลับไปหน้าเข้าสู่ระบบ
+      </button>
+
+      <div class="mate-zone">
+        <div class="mate-message">
+          มาเริ่มออมไปด้วยกันนะ ♥
+        </div>
+
+        <span class="mate-heart heart-1" aria-hidden="true">♥</span>
+        <span class="mate-heart heart-2" aria-hidden="true">♥</span>
+        <span class="mate-heart heart-3" aria-hidden="true">♥</span>
+
+        <span class="mate-glint glint-1" aria-hidden="true"></span>
+        <span class="mate-glint glint-2" aria-hidden="true"></span>
+
+        <img
+          class="mate-character"
+          src="{{ url_for('static', filename='img/mate-login.png') }}"
+          alt="น้อง Mate ต้อนรับสมาชิกใหม่"
+        >
+      </div>
+
+      <div class="auth-card">
+        <header class="auth-card-header">
+          <h1>สมัครสมาชิก</h1>
+          <p>สร้างบัญชีใหม่เพื่อเริ่มใช้งาน MoneyMate</p>
+        </header>
+
+        <form method="post" id="registerForm">
+          <input type="hidden" name="action" value="register">
+
+          <label class="auth-field">
+            <span>ชื่อผู้ใช้</span>
+
+            <div class="auth-input-wrap">
+              <span class="auth-input-icon" aria-hidden="true">♙</span>
+
+              <input
+                type="text"
+                name="username"
+                minlength="3"
+                maxlength="30"
+                required
+                autocomplete="username"
+                placeholder="ชื่อผู้ใช้"
+              >
+            </div>
+          </label>
+
+          <label class="auth-field">
+            <span>รหัสผ่าน</span>
+
+            <div class="auth-input-wrap">
+              <span class="auth-input-icon" aria-hidden="true">♙</span>
+
+              <input
+                type="password"
+                name="password"
+                id="registerPassword"
+                minlength="6"
+                required
+                autocomplete="new-password"
+                placeholder="รหัสผ่าน"
+              >
+
+              <button
+                type="button"
+                class="password-toggle"
+                data-password-target="registerPassword"
+                aria-label="แสดงหรือซ่อนรหัสผ่าน"
+              >
+                ◉
+              </button>
+            </div>
+          </label>
+
+          <label class="auth-field">
+            <span>ยืนยันรหัสผ่าน</span>
+
+            <div class="auth-input-wrap">
+              <span class="auth-input-icon" aria-hidden="true">♙</span>
+
+              <input
+                type="password"
+                id="confirmPassword"
+                minlength="6"
+                required
+                autocomplete="new-password"
+                placeholder="ยืนยันรหัสผ่าน"
+              >
+
+              <button
+                type="button"
+                class="password-toggle"
+                data-password-target="confirmPassword"
+                aria-label="แสดงหรือซ่อนรหัสผ่าน"
+              >
+                ◉
+              </button>
+            </div>
+          </label>
+
+          <button class="auth-submit" type="submit">
+            สร้างบัญชี
+          </button>
+        </form>
+
+        <div class="auth-change">
+          มีบัญชีอยู่แล้ว?
+
+          <button
+            type="button"
+            class="auth-link"
+            id="showLoginBottom"
+          >
+            เข้าสู่ระบบ →
+          </button>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+  const changePasswordForm = document.getElementById("changePasswordForm");
+  const newAccountPassword = document.getElementById("newAccountPassword");
+  const confirmAccountPassword = document.getElementById("confirmAccountPassword");
+
+  changePasswordForm?.addEventListener("submit", function (event) {
+    if (newAccountPassword.value !== confirmAccountPassword.value) {
+      event.preventDefault();
+      confirmAccountPassword.setCustomValidity("รหัสผ่านใหม่ไม่ตรงกัน");
+      confirmAccountPassword.reportValidity();
+      confirmAccountPassword.focus();
+    } else {
+      confirmAccountPassword.setCustomValidity("");
+    }
+  });
+
+  confirmAccountPassword?.addEventListener("input", function () {
+    confirmAccountPassword.setCustomValidity("");
+  });
+
+  const slider = document.getElementById("authSlider");
+  const loginPanel = document.getElementById("loginPanel");
+  const registerPanel = document.getElementById("registerPanel");
+
+  const showRegister = document.getElementById("showRegister");
+  const showLogin = document.getElementById("showLogin");
+  const showLoginBottom = document.getElementById("showLoginBottom");
+
+  function openRegister() {
+    slider.classList.add("show-register");
+
+    loginPanel.setAttribute("aria-hidden", "true");
+    registerPanel.setAttribute("aria-hidden", "false");
+
+    const usernameInput = registerPanel.querySelector(
+      'input[name="username"]'
+    );
+
+    window.setTimeout(function () {
+      usernameInput?.focus();
+    }, 500);
+  }
+
+  function openLogin() {
+    slider.classList.remove("show-register");
+
+    loginPanel.setAttribute("aria-hidden", "false");
+    registerPanel.setAttribute("aria-hidden", "true");
+
+    const usernameInput = loginPanel.querySelector(
+      'input[name="username"]'
+    );
+
+    window.setTimeout(function () {
+      usernameInput?.focus();
+    }, 500);
+  }
+
+  showRegister?.addEventListener("click", openRegister);
+  showLogin?.addEventListener("click", openLogin);
+  showLoginBottom?.addEventListener("click", openLogin);
+
+  /* ปุ่มแสดง/ซ่อนรหัสผ่าน */
+  document
+    .querySelectorAll(".password-toggle")
+    .forEach(function (button) {
+      button.addEventListener("click", function () {
+        const targetId = button.dataset.passwordTarget;
+        const input = document.getElementById(targetId);
+
+        if (!input) return;
+
+        if (input.type === "password") {
+          input.type = "text";
+          button.textContent = "◎";
+        } else {
+          input.type = "password";
+          button.textContent = "◉";
+        }
+      });
+    });
+
+  /* ตรวจสอบยืนยันรหัสผ่าน */
+  const registerForm = document.getElementById("registerForm");
+  const registerPassword =
+    document.getElementById("registerPassword");
+  const confirmPassword =
+    document.getElementById("confirmPassword");
+
+  registerForm?.addEventListener("submit", function (event) {
+    if (registerPassword.value !== confirmPassword.value) {
+      event.preventDefault();
+
+      confirmPassword.setCustomValidity(
+        "รหัสผ่านและการยืนยันรหัสผ่านไม่ตรงกัน"
+      );
+
+      confirmPassword.reportValidity();
+      confirmPassword.focus();
+      return;
+    }
+
+    confirmPassword.setCustomValidity("");
+  });
+
+  confirmPassword?.addEventListener("input", function () {
+    confirmPassword.setCustomValidity("");
+  });
+});
+</script>
+{% endblock %}

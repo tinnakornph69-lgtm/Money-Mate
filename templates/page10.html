@@ -1,0 +1,7 @@
+{% extends "_money_base.html" %}
+{% block content %}
+<div class="hero-box"><h1>🔐 Admin Dashboard</h1><p class="note">พื้นที่สรุปข้อมูลระบบสำหรับผู้ดูแล ไม่แสดงข้อมูลรับรองการเข้าสู่ระบบบนหน้าเว็บ</p></div>
+<div class="grid-3"><div class="stat"><div class="label">สมาชิก</div><div class="value">{{ users|length }}</div></div><div class="stat"><div class="label">กำลังใช้งาน</div><div class="value">{{ active }}</div></div><div class="stat gold"><div class="label">จำนวนผู้เข้าชมสะสม</div><div class="value">{{ visits }}</div></div></div>
+<div class="grid-3"><div class="stat"><div class="label">รายการทั้งหมด</div><div class="value">{{ transactions }}</div></div><div class="stat"><div class="label">รายรับรวม</div><div class="value">฿ {{ "{:,.2f}".format(income) }}</div></div><div class="stat"><div class="label">รายจ่ายรวม</div><div class="value">฿ {{ "{:,.2f}".format(expense) }}</div></div></div>
+<section class="card"><h2>👥 สมาชิกที่ลงทะเบียน</h2>{% if users %}<div class="table-wrap"><table><thead><tr><th>ชื่อผู้ใช้</th><th>วันที่สมัคร</th></tr></thead><tbody>{% for u in users %}<tr><td>{{ u.username }}</td><td>{{ u.created_at }}</td></tr>{% endfor %}</tbody></table></div>{% else %}<p class="note">ยังไม่มีสมาชิก</p>{% endif %}</section>
+{% endblock %}
