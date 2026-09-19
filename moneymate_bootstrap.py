@@ -8,7 +8,7 @@ from datetime import timedelta
 
 from flask import abort, redirect, request, session, url_for
 
-from persistent_store import read_json
+from persistent_store import read_json, write_json
 
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -127,9 +127,10 @@ def _summaries(user):
         "completed": completed,
         "lit": total_saved > 0,
     }
+    actual_balance = max(0.0, income - expense)
     dashboard = {
-        "balance": income - expense,
-        "balance_display": "{:,.2f}".format(income - expense),
+        "balance": actual_balance,
+        "balance_display": "{:,.2f}".format(actual_balance),
         "month_income": income,
         "month_income_display": "{:,.2f}".format(income),
         "month_expense": expense,
@@ -140,6 +141,113 @@ def _summaries(user):
     sidebar["saved_display"] = savings["total_display"]
     sidebar["next_level"] = min(5, level + 1)
     return savings, dashboard, sidebar
+
+
+def _admin_selected(form):
+    if hasattr(form, "getlist"):
+        return {str(v).strip() for v in form.getlist("selected_users") if str(v).strip()}
+    value = form.get("selected_users", [])
+    if isinstance(value, (list, tuple, set)):
+        return {str(v).strip() for v in value if str(v).strip()}
+    value = str(value).strip()
+    return {value} if value else set()
+
+
+def _delete_users_everywhere(usernames):
+    """ลบบัญชีและข้อมูลที่มี owner ตรงกับบัญชีที่เลือก."""
+    usernames = {str(x).strip() for x in usernames if str(x).strip()}
+    if not usernames:
+        return 0
+
+    accounts = read_json("accounts.json", {"users": [], "admin": {}})
+    if not isinstance(accounts, dict):
+        accounts = {"users": [], "admin": {}}
+    users = accounts.get("users", [])
+    if not isinstance(users, list):
+        users = []
+
+    kept_users = [
+        item for item in users
+        if not (isinstance(item, dict) and str(item.get("username", "")).strip() in usernames)
+    ]
+    deleted = len(users) - len(kept_users)
+    if not deleted:
+        return 0
+    accounts["users"] = kept_users
+    write_json("accounts.json", accounts)
+
+    # User-owned list stores.
+    for filename in ("money_data.json", "savings_data.json", "recurring_income.json"):
+        data = read_json(filename, [])
+        if isinstance(data, list):
+            write_json(filename, [
+                item for item in data
+                if not (isinstance(item, dict) and str(item.get("owner", "")).strip() in usernames)
+            ])
+
+    # Budget data can be nested/dict-shaped; recursively remove keys/records owned by deleted users.
+    budget = read_json("budget_data.json", {})
+    def clean(value):
+        if isinstance(value, list):
+            return [
+                clean(item) for item in value
+                if not (isinstance(item, dict) and str(item.get("owner", "")).strip() in usernames)
+            ]
+        if isinstance(value, dict):
+            result = {}
+            for key, item in value.items():
+                if str(key).strip() in usernames:
+                    continue
+                if isinstance(item, dict) and str(item.get("owner", "")).strip() in usernames:
+                    continue
+                result[key] = clean(item)
+            return result
+        return value
+    if isinstance(budget, (dict, list)):
+        write_json("budget_data.json", clean(budget))
+
+    presence = read_json("presence.json", {"visits": 0, "clients": {}})
+    if isinstance(presence, dict):
+        clients = presence.get("clients", {})
+        if isinstance(clients, dict):
+            presence["clients"] = {
+                key: val for key, val in clients.items()
+                if not (isinstance(val, dict) and str(val.get("user", "")).strip() in usernames)
+            }
+            write_json("presence.json", presence)
+    return deleted
+
+
+def _password_hash(password, salt):
+    return hashlib.pbkdf2_hmac(
+        "sha256", password.encode(), salt.encode(), 120000
+    ).hex()
+
+
+def _verify_admin_password(password):
+    accounts = read_json("accounts.json", {"users": [], "admin": {}})
+    admin = accounts.get("admin", {}) if isinstance(accounts, dict) else {}
+    saved_hash = str(admin.get("password_hash", ""))
+    salt = str(admin.get("salt", ""))
+    return bool(
+        password and saved_hash and salt
+        and hmac.compare_digest(_password_hash(password, salt), saved_hash)
+    )
+
+
+def _reset_user_password(username, new_password):
+    accounts = read_json("accounts.json", {"users": [], "admin": {}})
+    if not isinstance(accounts, dict):
+        return False
+    for user in accounts.get("users", []):
+        if isinstance(user, dict) and str(user.get("username", "")).lower() == str(username).lower():
+            salt = secrets.token_hex(16)
+            user["salt"] = salt
+            user["password_hash"] = _password_hash(new_password, salt)
+            user["must_change_password"] = True
+            write_json("accounts.json", accounts)
+            return True
+    return False
 
 
 def configure(app):
@@ -159,6 +267,37 @@ def configure(app):
 
     @app.before_request
     def money_before_request():
+        # Admin bulk account deletion. Kept here so course GIVEN files stay unchanged.
+        if request.path == "/page10" and request.method == "POST":
+            if not session.get("is_admin"):
+                abort(403)
+            action = request.form.get("action", "").strip()
+            if action == "bulk_delete_users":
+                supplied = request.form.get("csrf_token", "")
+                expected = session.get("csrf_token", "")
+                if not supplied or not expected or not hmac.compare_digest(supplied, expected):
+                    abort(400, description="คำขอไม่ถูกต้อง กรุณาลองใหม่")
+                selected = _admin_selected(request.form)
+                # Never delete the currently signed-in administrator.
+                selected.discard(str(session.get("user", "")).strip())
+                _delete_users_everywhere(selected)
+                return redirect(url_for("page", name="page10"))
+            if action == "reset_user_password":
+                supplied = request.form.get("csrf_token", "")
+                expected = session.get("csrf_token", "")
+                if not supplied or not expected or not hmac.compare_digest(supplied, expected):
+                    abort(400, description="คำขอไม่ถูกต้อง กรุณาลองใหม่")
+                admin_password = str(request.form.get("admin_password", ""))
+                username = str(request.form.get("username", "")).strip()
+                temporary = str(request.form.get("temporary_password", ""))
+                if not _verify_admin_password(admin_password):
+                    abort(403, description="รหัสผ่านผู้ดูแลไม่ถูกต้อง")
+                if len(temporary) < 8:
+                    abort(400, description="รหัสผ่านชั่วคราวต้องมีอย่างน้อย 8 ตัวอักษร")
+                if not _reset_user_password(username, temporary):
+                    abort(404, description="ไม่พบบัญชีผู้ใช้")
+                return redirect(url_for("page", name="page10"))
+
         if session.get("user"):
             session.permanent = True
 
@@ -166,6 +305,15 @@ def configure(app):
             if request.form.get("action", "").strip() == "logout":
                 session.clear()
                 return redirect(url_for("home"))
+
+        # ผู้ใช้ที่ Admin reset รหัสผ่าน ต้องเปลี่ยนรหัสก่อนใช้งานส่วนอื่น
+        if (
+            session.get("user")
+            and not session.get("is_admin")
+            and session.get("must_change_password")
+            and request.path != "/page1"
+        ):
+            return redirect(url_for("page", name="page1", view="profile"))
 
         # กัน query เดิมของหน้าบัญชีพาผู้ใช้กลับไปหน้าเปลี่ยนรหัสผ่าน
         # หลังเพิ่งล็อกอินสำเร็จ ให้ไปหน้าแรกเสมอ
@@ -181,6 +329,7 @@ def configure(app):
             request.path == "/page1"
             and request.method == "GET"
             and session.get("user")
+            and not session.get("must_change_password")
             and request.args.get("view") != "profile"
             and not (
                 request.args.get("msg")

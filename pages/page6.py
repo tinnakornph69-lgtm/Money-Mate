@@ -116,6 +116,8 @@ def build(query=None):
     if not isinstance(category_bucket, dict):
         category_bucket = {}
 
+    # แสดงทั้งหมวดที่มีธุรกรรมและหมวดที่ผู้ใช้เคยตั้งงบ
+    cats = sorted(set(cats) | set(category_bucket.keys()))
     rows = []
     for c in cats:
         b = float(category_bucket.get(c, 0) or 0)
@@ -130,10 +132,20 @@ def build(query=None):
         "periods": PERIODS,
         "monthly": monthly,
         "expense": exp,
-        "remaining": monthly - exp,
+        "remaining": max(0.0, monthly - exp),
         "rows": rows,
         "categories": cats,
     }
+
+
+def _selected_values(form, name):
+    """อ่านค่าหลายค่าจาก checkbox ได้ทั้ง MultiDict และ dict ปกติ"""
+    if hasattr(form, "getlist"):
+        return [str(v).strip() for v in form.getlist(name) if str(v).strip()]
+    value = form.get(name, [])
+    if isinstance(value, (list, tuple, set)):
+        return [str(v).strip() for v in value if str(v).strip()]
+    return [str(value).strip()] if str(value).strip() else []
 
 def handle(form):
     # รองรับการตรวจ handle({}) จาก check_project.py นอก request context
@@ -151,6 +163,21 @@ def handle(form):
     data = read(BFILE, {"users": {}})
     data, budget = user_budget(data, user)
     key = current_period(period)
+
+    if action == "bulk_delete_categories":
+        selected = set(_selected_values(form, "selected_categories"))
+        if not selected:
+            return "กรุณาเลือกงบหมวดที่ต้องการลบ"
+        categories = budget.setdefault("categories", {}).setdefault(period, {}).setdefault(key, {})
+        deleted = 0
+        for category in list(categories):
+            if category in selected:
+                del categories[category]
+                deleted += 1
+        if not deleted:
+            return "ไม่พบงบหมวดที่ต้องการลบ"
+        save(data)
+        return f"ลบงบหมวด {deleted} รายการเรียบร้อยแล้ว"
 
     try:
         value = float(form.get("amount", 0))

@@ -217,12 +217,12 @@ def build(query=None):
         # ยอดรวม
         "income": income,
         "expense": expense,
-        "balance": income - expense,
+        "balance": max(0.0, income - expense),
 
         # เดือนนี้
         "month_income": month_income,
         "month_expense": month_expense,
-        "month_balance": month_income - month_expense,
+        "month_balance": max(0.0, month_income - month_expense),
 
         "month": today.strftime("%B %Y"),
 

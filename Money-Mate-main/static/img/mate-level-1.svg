@@ -1,6 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" role="img" aria-label="น้อง Mate ระดับเริ่มต้น">
-  <defs><filter id="s"><feDropShadow dx="0" dy="12" stdDeviation="10" flood-color="#8b3b2c" flood-opacity=".18"/></filter></defs>
-  <ellipse cx="250" cy="446" rx="132" ry="22" fill="#8b3b2c" opacity=".12"/>
-  <image href="mate-login.png" x="55" y="35" width="390" height="390" preserveAspectRatio="xMidYMid meet" filter="url(#s)"/>
-  <circle cx="95" cy="126" r="10" fill="#ef476f"/><circle cx="405" cy="160" r="7" fill="#ffc43d"/>
-</svg>

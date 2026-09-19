@@ -1,7 +1,0 @@
-{% extends "base.html" %}
-{% block content %}
-<div class="hero-box"><h1>📄 รายงานการเงิน</h1><p class="note">สรุปภาพรวมทั้งหมด แยกเป็นรายเดือนและหมวดค่าใช้จ่าย</p></div>
-<div class="grid-3"><div class="stat"><div class="label">รายรับรวม</div><div class="value">฿ {{ "{:,.2f}".format(income) }}</div></div><div class="stat bad"><div class="label">รายจ่ายรวม</div><div class="value">฿ {{ "{:,.2f}".format(expense) }}</div></div><div class="stat good"><div class="label">เงินเหลือรวม</div><div class="value">฿ {{ "{:,.2f}".format(saving) }}</div></div></div>
-<section class="card"><h2>📅 รายงานรายเดือน</h2><div class="table-wrap"><table><thead><tr><th>เดือน</th><th>รายรับ</th><th>รายจ่าย</th><th>เงินออม/เหลือ</th></tr></thead><tbody>{% for r in rows %}<tr><td>{{ r.month }}</td><td>฿ {{ "{:,.2f}".format(r.income) }}</td><td>฿ {{ "{:,.2f}".format(r.expense) }}</td><td>฿ {{ "{:,.2f}".format(r.saving) }}</td></tr>{% else %}<tr><td colspan="4">ยังไม่มีข้อมูล</td></tr>{% endfor %}</tbody></table></div></section>
-<section class="card"><h2>🏷️ รายจ่ายตามหมวด</h2>{% for c,a in cats %}<div class="sum-row"><span>{{ c }}</span><b>฿ {{ "{:,.2f}".format(a) }}</b></div>{% else %}<p class="note">ยังไม่มีข้อมูล</p>{% endfor %}</section>
-{% endblock %}

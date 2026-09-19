@@ -208,7 +208,31 @@
         align-items:flex-start
     }
 }
+
+.weekday-pills{display:flex;flex-wrap:wrap;gap:8px}.weekday-pills label,.month-day-grid label{border:1px solid var(--line);border-radius:10px;padding:8px 10px;background:#fff;cursor:pointer}
+.month-day-grid{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:6px;margin-top:8px}
+@media(max-width:750px){.month-day-grid{grid-template-columns:repeat(5,minmax(0,1fr))}}
 </style>
+
+<script>
+(function(){
+  const radios=document.querySelectorAll('input[name="recurring_frequency"]');
+  function updateRecurring(){
+    const v=document.querySelector('input[name="recurring_frequency"]:checked')?.value || 'once';
+    const once=document.getElementById('recurring-once');
+    const range=document.getElementById('recurring-range');
+    const weekly=document.getElementById('recurring-weekly');
+    const monthly=document.getElementById('recurring-monthly');
+    if(once) once.style.display=v==='once'?'block':'none';
+    if(range) range.style.display=v==='once'?'none':'grid';
+    if(weekly) weekly.style.display=v==='weekly'?'block':'none';
+    if(monthly) monthly.style.display=v==='monthly'?'block':'none';
+  }
+  radios.forEach(r=>r.addEventListener('change',updateRecurring));
+  updateRecurring();
+})();
+</script>
+
 {% endblock %}
 
 
@@ -262,6 +286,15 @@
 <div class="mm3-card">
 
     <h2>📅 รายรับล่วงหน้า / รายรับประจำ</h2>
+    {% if recurring %}
+    <form id="bulkRecurring" method="post" onsubmit="return confirmBulk(this, 'ลบรายรับประจำที่เลือกหรือไม่?')">
+      <input type="hidden" name="action" value="bulk_delete_recurring">
+      <div class="bulk-toolbar">
+        <label class="bulk-select-all"><input type="checkbox" data-select-all="recurring"> เลือกทั้งหมด</label>
+        <button class="btn small danger" type="submit">🗑️ ลบรายการที่เลือก</button>
+      </div>
+    </form>
+    {% endif %}
 
     <p class="note">
         ตั้งรายรับไว้ล่วงหน้า เมื่อถึงวันที่กำหนด
@@ -316,99 +349,42 @@
 
 
         <div class="mm3-field">
-
-            <label>
-                รูปแบบการรับเงิน
-            </label>
-
+            <label>รูปแบบการรับเงิน</label>
             <div class="mm3-frequency">
-
-                <label>
-                    <input
-                        type="radio"
-                        name="recurring_frequency"
-                        value="once"
-                        checked
-                    >
-
-                    รับครั้งเดียว
-                </label>
-
-
-                <label>
-                    <input
-                        type="radio"
-                        name="recurring_frequency"
-                        value="monthly"
-                    >
-
-                    รับทุกเดือน
-                </label>
-
+                <label><input type="radio" name="recurring_frequency" value="once" checked> ครั้งเดียว</label>
+                <label><input type="radio" name="recurring_frequency" value="daily"> ทุกวัน</label>
+                <label><input type="radio" name="recurring_frequency" value="weekly"> รายสัปดาห์</label>
+                <label><input type="radio" name="recurring_frequency" value="monthly"> รายเดือน</label>
             </div>
-
         </div>
 
-
-        <!-- ครั้งเดียว -->
-
-        <div
-            id="recurring-once"
-            class="mm3-field"
-        >
-
-            <label>
-                วันที่ได้รับ
-            </label>
-
-            <input
-                name="recurring_date"
-                type="date"
-                value="{{ today }}"
-            >
-
-            <div class="mm3-hint">
-                เมื่อถึงวันนี้ ระบบจะเพิ่มรายรับให้อัตโนมัติ
-            </div>
-
+        <div id="recurring-once" class="mm3-field recurring-options">
+            <label>วันที่ได้รับ</label>
+            <input name="recurring_date" type="date" value="{{ today }}">
         </div>
 
-
-        <!-- ทุกเดือน -->
-
-        <div
-            id="recurring-monthly"
-            class="mm3-field"
-            style="display:none;"
-        >
-
-            <label>
-                วันที่รับของทุกเดือน
-            </label>
-
-            <select name="recurring_day">
-
-                <option value="">
-                    -- เลือกวันที่ --
-                </option>
-
-                {% for d in range(1, 32) %}
-
-                <option value="{{ d }}">
-                    วันที่ {{ d }}
-                </option>
-
-                {% endfor %}
-
-            </select>
-
-            <div class="mm3-hint">
-                ถ้าเดือนนั้นไม่มีวันที่เลือก เช่น วันที่ 31
-                ระบบจะใช้วันสุดท้ายของเดือนแทน
-            </div>
-
+        <div id="recurring-range" class="mm3-recurring-grid recurring-options" style="display:none;">
+            <div class="mm3-field"><label>เริ่มตั้งแต่</label><input name="recurring_start_date" type="date" value="{{ today }}"></div>
+            <div class="mm3-field"><label>สิ้นสุด (ไม่บังคับ)</label><input name="recurring_end_date" type="date"></div>
         </div>
 
+        <div id="recurring-weekly" class="mm3-field recurring-options" style="display:none;">
+            <label>เลือกวันที่ได้รับในแต่ละสัปดาห์</label>
+            <div class="mm3-frequency weekday-pills">
+              {% for value,label in [(0,'จันทร์'),(1,'อังคาร'),(2,'พุธ'),(3,'พฤหัส'),(4,'ศุกร์'),(5,'เสาร์'),(6,'อาทิตย์')] %}
+              <label><input type="checkbox" name="recurring_weekdays" value="{{ value }}"> {{ label }}</label>
+              {% endfor %}
+            </div>
+            <div class="mm3-hint">เลือกได้หลายวัน เช่น อังคาร + ศุกร์</div>
+        </div>
+
+        <div id="recurring-monthly" class="mm3-field recurring-options" style="display:none;">
+            <label>วันที่ได้รับในแต่ละเดือน</label>
+            <div class="month-day-grid">
+              {% for d in range(1,32) %}<label><input type="checkbox" name="recurring_month_days" value="{{ d }}"> {{ d }}</label>{% endfor %}
+            </div>
+            <div class="mm3-hint">เลือกได้หลายวันที่ เช่น 1, 15 และ 28 — ถ้าเลือก 31 ในเดือนสั้น ระบบใช้วันสุดท้ายของเดือน</div>
+        </div>
 
         <br>
 
@@ -447,14 +423,15 @@
                 <div class="mm3-recurring-meta">
 
                     {% if r.frequency == "monthly" %}
-
-                        ทุกเดือน วันที่ {{ r.day }}
-
+                        ทุกเดือน วันที่ {{ (r.month_days or [r.day]) | join(', ') }}
+                    {% elif r.frequency == "weekly" %}
+                        ทุกสัปดาห์ • วัน {{ r.weekdays | map('int') | join(', ') }} • รอบถัดไป {{ r.next_date }}
+                    {% elif r.frequency == "daily" %}
+                        ทุกวัน • รอบถัดไป {{ r.next_date }}
                     {% else %}
-
-                        วันที่ {{ r.next_date }}
-
+                        ครั้งเดียว • {{ r.next_date }}
                     {% endif %}
+                    {% if r.end_date %} • ถึง {{ r.end_date }}{% endif %}
 
                 </div>
 
@@ -921,6 +898,13 @@
     <h2>📋 รายการทั้งหมด</h2>
 
     {% if transactions %}
+    <form id="bulkTransactions" method="post" onsubmit="return confirmBulk(this, 'ลบรายการที่เลือกหรือไม่?')">
+        <input type="hidden" name="action" value="bulk_delete">
+        <div class="bulk-toolbar">
+            <label class="bulk-select-all"><input type="checkbox" data-select-all="tx"> เลือกทั้งหมด</label>
+            <button class="btn small danger" type="submit">🗑️ ลบรายการที่เลือก</button>
+        </div>
+    </form>
 
     <div class="table-wrap">
 
@@ -930,6 +914,7 @@
 
                 <tr>
 
+                    <th class="bulk-check-col"></th>
                     <th>วันที่</th>
                     <th>ประเภท</th>
                     <th>หมวด</th>
@@ -948,6 +933,7 @@
 
                 <tr>
 
+                    <td class="bulk-check-col"><input type="checkbox" name="selected_ids" value="{{ x.id }}" form="bulkTransactions" data-bulk-group="tx" aria-label="เลือกรายการ"></td>
                     <td>
                         {{ x.date }}
                     </td>
@@ -1161,6 +1147,23 @@ frequencyInputs.forEach(function(input) {
 
 
 updateRecurringForm();
+
+
+function setupBulkSelection() {
+  document.querySelectorAll('[data-select-all]').forEach(function(master) {
+    master.addEventListener('change', function() {
+      document.querySelectorAll('[data-bulk-group="' + master.dataset.selectAll + '"]').forEach(function(box) {
+        box.checked = master.checked;
+      });
+    });
+  });
+}
+function confirmBulk(form, message) {
+  var boxes = document.querySelectorAll('input[form="' + form.id + '"][type="checkbox"]:checked');
+  if (!boxes.length) { alert('กรุณาเลือกรายการอย่างน้อย 1 รายการ'); return false; }
+  return confirm(message);
+}
+setupBulkSelection();
 
 </script>
 

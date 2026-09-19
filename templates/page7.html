@@ -170,10 +170,18 @@
     <h2>📊 เป้าหมายของฉัน</h2>
 
     {% if goals %}
+    <form id="bulkGoals" method="post" action="/page7" onsubmit="return confirmBulkGoals()">
+      <input type="hidden" name="action" value="bulk_delete_goals">
+      <div class="bulk-toolbar">
+        <label><input type="checkbox" id="selectAllGoals"> เลือกทั้งหมด</label>
+        <button type="submit" class="btn btn-danger">🗑️ ลบรายการที่เลือก</button>
+      </div>
+    </form>
 
         {% for goal in goals %}
 
         <div class="goal-card">
+            <input class="goal-bulk-check" type="checkbox" name="selected_ids" value="{{ goal.id }}" form="bulkGoals" aria-label="เลือกเป้าหมาย {{ goal.name }}">
 
             <div class="goal-header">
 
@@ -1037,6 +1045,12 @@ function toggleAutoSave() {
 
 }
 
+</script>
+
+
+<script>
+document.getElementById('selectAllGoals')?.addEventListener('change', function(){document.querySelectorAll('.goal-bulk-check').forEach(x=>x.checked=this.checked)});
+function confirmBulkGoals(){if(!document.querySelector('.goal-bulk-check:checked')){alert('กรุณาเลือกเป้าหมายอย่างน้อย 1 รายการ');return false}return confirm('ลบเป้าหมายที่เลือกหรือไม่? การลบจะลบข้อมูลของเป้าหมายนั้นด้วย')}
 </script>
 
 {% endblock %}

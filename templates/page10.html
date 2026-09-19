@@ -3,5 +3,54 @@
 <div class="hero-box"><h1>🔐 Admin Dashboard</h1><p class="note">พื้นที่สรุปข้อมูลระบบสำหรับผู้ดูแล ไม่แสดงข้อมูลรับรองการเข้าสู่ระบบบนหน้าเว็บ</p></div>
 <div class="grid-3"><div class="stat"><div class="label">สมาชิก</div><div class="value">{{ users|length }}</div></div><div class="stat"><div class="label">กำลังใช้งาน</div><div class="value">{{ active }}</div></div><div class="stat gold"><div class="label">จำนวนผู้เข้าชมสะสม</div><div class="value">{{ visits }}</div></div></div>
 <div class="grid-3"><div class="stat"><div class="label">รายการทั้งหมด</div><div class="value">{{ transactions }}</div></div><div class="stat"><div class="label">รายรับรวม</div><div class="value">฿ {{ "{:,.2f}".format(income) }}</div></div><div class="stat"><div class="label">รายจ่ายรวม</div><div class="value">฿ {{ "{:,.2f}".format(expense) }}</div></div></div>
-<section class="card"><h2>👥 สมาชิกที่ลงทะเบียน</h2>{% if users %}<div class="table-wrap"><table><thead><tr><th>ชื่อผู้ใช้</th><th>วันที่สมัคร</th></tr></thead><tbody>{% for u in users %}<tr><td>{{ u.username }}</td><td>{{ u.created_at }}</td></tr>{% endfor %}</tbody></table></div>{% else %}<p class="note">ยังไม่มีสมาชิก</p>{% endif %}</section>
+<section class="card">
+  <h2>👥 สมาชิกที่ลงทะเบียน</h2>
+  <p class="note">เพื่อความปลอดภัย ระบบไม่สามารถเปิดดูรหัสเดิมที่ถูก hash ได้ ผู้ดูแลสามารถยืนยันรหัส Admin แล้วตั้งรหัสชั่วคราวให้ผู้ใช้แทน โดยผู้ใช้จะถูกบังคับให้เปลี่ยนรหัสหลังเข้าสู่ระบบ</p>
+  {% if users %}
+  <form id="adminBulkDelete" method="post" action="/page10" onsubmit="return confirmAdminDelete()">
+    <input type="hidden" name="action" value="bulk_delete_users">
+    <div class="bulk-toolbar">
+      <label><input type="checkbox" id="selectAllUsers"> เลือกทั้งหมด</label>
+      <button class="btn small danger" type="submit">🗑️ ลบบัญชีที่เลือก</button>
+    </div>
+  </form>
+  <div class="table-wrap"><table>
+    <thead><tr><th class="bulk-check-col"></th><th>ชื่อผู้ใช้</th><th>วันที่สมัคร</th><th>จัดการรหัสผ่าน</th></tr></thead>
+    <tbody>{% for u in users %}
+      <tr>
+        <td class="bulk-check-col"><input class="admin-user-check" type="checkbox" name="selected_users" value="{{ u.username }}" form="adminBulkDelete" {% if u.username == current_user %}disabled title="ไม่สามารถลบบัญชีที่กำลังใช้งาน"{% endif %}></td>
+        <td>{{ u.username }}{% if u.username == current_user %} <span class="note">(บัญชีปัจจุบัน)</span>{% endif %}</td>
+        <td>{{ u.created_at }}</td>
+        <td>
+          <details class="admin-reset-box">
+            <summary>🔑 รีเซ็ตรหัสผ่าน</summary>
+            <form method="post" action="/page10" class="admin-reset-form">
+              <input type="hidden" name="action" value="reset_user_password">
+              <input type="hidden" name="username" value="{{ u.username }}">
+              <input type="password" name="admin_password" placeholder="รหัสผ่าน Admin" autocomplete="current-password" required>
+              <input type="password" name="temporary_password" minlength="8" placeholder="รหัสชั่วคราวใหม่ (8+ ตัว)" autocomplete="new-password" required>
+              <button class="btn small" type="submit" onclick="return confirm('ยืนยันรีเซ็ตรหัสผ่านของ {{ u.username }}?')">ยืนยันการรีเซ็ต</button>
+            </form>
+          </details>
+        </td>
+      </tr>
+    {% endfor %}</tbody>
+  </table></div>
+  {% else %}<p class="note">ยังไม่มีสมาชิก</p>{% endif %}
+</section>
+<script>
+const adminSelectAll=document.getElementById('selectAllUsers');
+adminSelectAll?.addEventListener('change',function(){
+  document.querySelectorAll('.admin-user-check:not(:disabled)').forEach(box=>box.checked=this.checked);
+});
+function confirmAdminDelete(){
+  const selected=document.querySelectorAll('.admin-user-check:checked');
+  if(!selected.length){alert('กรุณาเลือกบัญชีอย่างน้อย 1 บัญชี');return false;}
+  return confirm('ยืนยันลบบัญชีที่เลือก? ข้อมูลธุรกรรม งบประมาณ เป้าหมาย และข้อมูลของบัญชีนั้นจะถูกลบด้วย');
+}
+</script>
+<style>
+.admin-reset-box summary{cursor:pointer;font-weight:700}.admin-reset-form{display:grid;gap:7px;margin-top:8px;min-width:220px}
+.admin-reset-form input{padding:8px 10px;border:1px solid var(--line);border-radius:9px;font:inherit}
+</style>
 {% endblock %}

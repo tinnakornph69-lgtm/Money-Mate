@@ -156,7 +156,7 @@ def get_balance(user):
         elif item.get("type") == "expense":
             expense += amount
 
-    return income - expense
+    return max(0.0, income - expense)
 
 
 def get_balance_from_items(items, user):
@@ -927,13 +927,25 @@ def add_goal(form, user):
         )
     }
 
-    savings.append(goal)
+    # เงินตั้งต้นในเป้าหมายถือเป็นเงินจริงที่กันออกจากยอดใช้ได้
+    if saved > get_balance(user) + 1e-9:
+        return f"ยอดเงินคงเหลือไม่เพียงพอสำหรับเงินตั้งต้น (คงเหลือ {get_balance(user):,.2f} บาท)"
 
+    savings.append(goal)
     save_savings(savings)
 
-    return (
-        "เพิ่มเป้าหมายการออมเรียบร้อยแล้ว"
-    )
+    if saved > 0:
+        money_data = load_money()
+        money_data.append({
+            "id": f"saving_{goal_id}_{datetime.now().timestamp()}",
+            "owner": user, "type": "expense", "amount": round(saved, 2),
+            "category": "เงินออม", "description": f"เงินตั้งต้นเป้าหมาย: {name}",
+            "date": date.today().isoformat(), "created_at": datetime.now().isoformat(timespec="seconds"),
+            "source": "manual_saving", "saving_goal_id": goal_id,
+        })
+        save_money(money_data)
+
+    return "เพิ่มเป้าหมายการออมเรียบร้อยแล้ว"
 
 
 # =========================================================
@@ -1107,10 +1119,11 @@ def add_saving(form, user):
             "เป้าหมายนี้สำเร็จแล้ว"
         )
 
-    amount = min(
-        amount,
-        remaining
-    )
+    amount = min(amount, remaining)
+
+    available = get_balance(user)
+    if amount > available + 1e-9:
+        return f"ยอดเงินคงเหลือไม่เพียงพอ (คงเหลือ {available:,.2f} บาท)"
 
     # -----------------------------------------------------
     # เพิ่มยอดออม
@@ -1355,6 +1368,16 @@ def delete_goal(form, user):
 # รับคำสั่งจาก app.py
 # =========================================================
 
+
+def _selected_values(form, name):
+    """อ่านค่าหลายค่าจาก checkbox ได้ทั้ง MultiDict และ dict ปกติ"""
+    if hasattr(form, "getlist"):
+        return [str(v).strip() for v in form.getlist(name) if str(v).strip()]
+    value = form.get(name, [])
+    if isinstance(value, (list, tuple, set)):
+        return [str(v).strip() for v in value if str(v).strip()]
+    return [str(value).strip()] if str(value).strip() else []
+
 def handle(form):
 
     # รองรับการตรวจ handle({}) จาก check_project.py นอก request context
@@ -1369,6 +1392,18 @@ def handle(form):
     action = str(
         form.get("action", "")
     ).strip()
+
+    if action == "bulk_delete_goals":
+        selected = set(_selected_values(form, "selected_ids"))
+        if not selected:
+            return "กรุณาเลือกเป้าหมายที่ต้องการลบ"
+        items = load_savings()
+        kept = [x for x in items if not (x.get("owner") == user and str(x.get("id")) in selected)]
+        deleted = len(items) - len(kept)
+        if not deleted:
+            return "ไม่พบเป้าหมายที่ต้องการลบ"
+        save_savings(kept)
+        return f"ลบเป้าหมาย {deleted} รายการเรียบร้อยแล้ว"
 
     if action == "add_goal":
 

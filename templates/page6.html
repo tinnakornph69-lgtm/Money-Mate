@@ -48,11 +48,11 @@
 
 <section class="card">
   <h2>ตั้งงบตามหมวด</h2>
-  <form method="post" class="budget-form">
+  <form method="post" class="budget-form" id="categoryBudgetForm">
     <input type="hidden" name="action" value="category">
     <input type="hidden" name="period" value="{{ period }}">
-    <div><label>หมวด</label><select name="category">{% for c in categories %}<option>{{ c }}</option>{% endfor %}</select></div>
-    <div><label>งบ</label><input type="number" step="0.01" min="0" name="amount" required></div>
+    <div><label>หมวด</label><select name="category" id="categoryBudgetSelect">{% for c in categories %}<option>{{ c }}</option>{% endfor %}</select></div>
+    <div><label>งบ</label><input id="categoryBudgetAmount" type="number" step="0.01" min="0" name="amount" required></div>
     <div class="full"><input name="custom_category" maxlength="60" placeholder="ถ้าเลือก “อื่น ๆ” พิมพ์หมวดหมู่เอง"></div>
     <div class="full"><button class="btn mm-primary">บันทึกงบหมวด</button></div>
   </form>
@@ -62,8 +62,29 @@
 
 <section class="card">
   <h2>📊 ความคืบหน้ารายหมวด</h2>
+  {% if rows %}
+  <form id="bulkCategories" method="post" onsubmit="return confirmBulkBudget()">
+    <input type="hidden" name="action" value="bulk_delete_categories">
+    <input type="hidden" name="period" value="{{ period }}">
+    <div class="bulk-toolbar">
+      <label><input type="checkbox" id="selectAllCategories"> เลือกทั้งหมด</label>
+      <button class="btn small danger" type="submit">🗑️ ลบรายการที่เลือก</button>
+    </div>
+  </form>
+  {% endif %}
   {% for r in rows %}
-    <div class="bar-row"><span>{{ r.category }}</span><div class="bar-track"><div class="bar-fill" style="width:{{ r.pct }}%"></div></div><span class="num">฿ {{ "{:,.0f}".format(r.spent) }} / {{ "{:,.0f}".format(r.budget) if r.budget else '-' }}</span></div>
+    <div class="bar-row"><input type="checkbox" name="selected_categories" value="{{ r.category }}" form="bulkCategories" class="category-check" aria-label="เลือก {{ r.category }}"><span>{{ r.category }}</span><div class="bar-track"><div class="bar-fill" style="width:{{ r.pct }}%"></div></div><span class="num">฿ {{ "{:,.0f}".format(r.spent) }} / {{ "{:,.0f}".format(r.budget) if r.budget else '-' }}</span>{% if r.budget %}<button type="button" class="btn small edit-budget" data-category="{{ r.category|e }}" data-budget="{{ r.budget }}">✏️ แก้ไข</button>{% endif %}</div>
   {% else %}<p class="note">ยังไม่มีข้อมูล</p>{% endfor %}
 </section>
+<script>
+document.getElementById('selectAllCategories')?.addEventListener('change', function(){document.querySelectorAll('.category-check').forEach(x=>x.checked=this.checked)});
+function confirmBulkBudget(){if(!document.querySelector('.category-check:checked')){alert('กรุณาเลือกงบหมวดอย่างน้อย 1 รายการ');return false}return confirm('ลบงบหมวดที่เลือกหรือไม่?')}
+document.querySelectorAll('.edit-budget').forEach(btn=>btn.addEventListener('click',()=>{
+ const select=document.getElementById('categoryBudgetSelect'), amount=document.getElementById('categoryBudgetAmount');
+ if(select){ let opt=[...select.options].find(o=>o.value===btn.dataset.category || o.text===btn.dataset.category); if(opt) select.value=opt.value; }
+ if(amount) amount.value=btn.dataset.budget;
+ document.getElementById('categoryBudgetForm')?.scrollIntoView({behavior:'smooth',block:'center'});
+ amount?.focus();
+}));
+</script>
 {% endblock %}

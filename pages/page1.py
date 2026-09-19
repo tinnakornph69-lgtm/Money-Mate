@@ -231,6 +231,8 @@ def handle(form):
         account["password_hash"] = password_hash
         account["salt"] = salt
         account["password_changed_at"] = time.strftime("%Y-%m-%d %H:%M:%S")
+        account["must_change_password"] = False
+        session["must_change_password"] = False
         _save(ACCOUNTS_FILE, accounts)
 
         return "เปลี่ยนรหัสผ่านเรียบร้อยแล้ว"
@@ -420,6 +422,7 @@ def handle(form):
 
                 session["user"] = saved_username
                 session["is_admin"] = False
+                session["must_change_password"] = bool(user.get("must_change_password"))
                 session["just_logged_in"] = True
 
                 # หลังเข้าสู่ระบบให้ไปหน้าแรก
