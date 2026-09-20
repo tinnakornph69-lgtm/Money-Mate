@@ -1405,15 +1405,9 @@
           <span class="mate-evolution-heart heart-right" aria-hidden="true">♥</span>
           <img
             class="mate-evolution-base"
-            src="{{ url_for('static', filename='img/mate-login.png') }}"
-            alt="น้อง Mate ระดับ {{ savings_summary.level }} {{ savings_summary.level_name }}"
-          >
-          <img
-            class="mate-evolution-accessory"
             src="{{ url_for('static', filename='img/' ~ savings_summary.mate_image) }}"
-            onerror="this.style.display='none';"
-            alt=""
-            aria-hidden="true"
+            onerror="this.src='{{ url_for('static', filename='img/mate-login.png') }}';"
+            alt="น้อง Mate ระดับ {{ savings_summary.level }} {{ savings_summary.level_name }}"
           >
         </div>
 

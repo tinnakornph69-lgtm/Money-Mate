@@ -95,16 +95,16 @@ def _summaries(user):
     total_target = sum(_money(goal.get("target")) for goal in user_goals)
     percent = int(min(100, total_saved * 100 / total_target)) if total_target else 0
 
-    if percent >= 80:
+    if percent >= 81:
         level, level_name, next_percent = 5, "แชมป์", 100
-    elif percent >= 60:
-        level, level_name, next_percent = 4, "นักสู้", 80
-    elif percent >= 40:
-        level, level_name, next_percent = 3, "มุ่งมั่น", 60
-    elif percent >= 20:
-        level, level_name, next_percent = 2, "สดใส", 40
+    elif percent >= 51:
+        level, level_name, next_percent = 4, "นักสู้", 81
+    elif percent >= 31:
+        level, level_name, next_percent = 3, "มุ่งมั่น", 51
+    elif percent >= 11:
+        level, level_name, next_percent = 2, "สดใส", 31
     else:
-        level, level_name, next_percent = 1, "เริ่มต้น", 20
+        level, level_name, next_percent = 1, "เริ่มต้น", 11
 
     completed = bool(total_target and total_saved >= total_target)
     if completed:
