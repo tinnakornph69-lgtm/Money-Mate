@@ -39,7 +39,7 @@
     ['.banner',                                                   { y: -18, dur: 500 }],
 
     /* ส่วนหัวของแต่ละหน้า: สไลด์เข้าจากซ้าย */
-    ['.hero-box, .page-header, .si-hero, .if-hero, .account-profile-head, .dashboard-hero',
+    ['.hero-box, .page-header, .si-hero, .if-hero, .account-profile-head, .dashboard-hero, .guide-hero',
                                                                   { x: -DIST, dur: 680 }],
 
     /* หน้าแรก (ยังไม่ล็อกอิน): ข้อความมาจากซ้าย น้อง Mate มาจากขวา */
@@ -56,7 +56,7 @@
 
     /* การ์ดหลัก: จะจัดคู่ซ้าย-ขวาให้ในฟังก์ชัน sideOf() ด้านล่าง; นอกนั้นเลื่อนขึ้น */
     ['.mm-panel, .mm3-card, .card, .panel, .si-card, .if-card, .dashboard-card, ' +
-     '.account-info-card, .password-card, .goal-card, .auth-viewport',
+     '.account-info-card, .password-card, .goal-card, .auth-viewport, .guide-card, .guide-flow',
                                                                   { y: RISE, dur: 680 }],
 
     /* หน้าที่ไม่มีการ์ด (เช่น /team): หัวข้อและตารางที่อยู่ตรงใน main */

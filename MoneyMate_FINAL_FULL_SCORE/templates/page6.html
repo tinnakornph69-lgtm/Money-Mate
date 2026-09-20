@@ -10,6 +10,15 @@
 .budget-form label{display:block;font-size:13px;font-weight:700;margin-bottom:6px}
 .budget-form input,.budget-form select{width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:9px;font:inherit}
 .budget-note{font-size:12px;color:var(--muted)}
+.category-progress-list{display:grid;gap:12px;margin-top:14px}
+.category-progress-item{display:grid;grid-template-columns:24px minmax(120px,.72fr) minmax(180px,1.35fr) minmax(130px,.72fr) auto;gap:14px;align-items:center;padding:14px 16px;border:1px solid rgba(122,31,43,.11);border-radius:16px;background:rgba(255,255,255,.82)}
+.category-progress-name{min-width:0;font-weight:700;color:var(--ink)}
+.category-progress-track{height:12px;overflow:hidden;border-radius:999px;background:#eee9e5;box-shadow:inset 0 1px 2px rgba(92,22,32,.08)}
+.category-progress-track .bar-fill{height:100%;border-radius:inherit}
+.category-progress-amount{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.category-progress-amount strong{display:block;color:var(--maroon);font-size:15px}
+.category-progress-amount small{display:block;color:var(--muted);font-size:11px}
+@media(max-width:760px){.category-progress-item{grid-template-columns:24px 1fr auto}.category-progress-track{grid-column:2/-1;grid-row:2}.category-progress-item .edit-budget{grid-column:2/-1;width:100%}}
 @media(max-width:700px){.budget-grid{grid-template-columns:1fr}.budget-form{grid-template-columns:1fr}.budget-form .full{grid-column:auto}}
 </style>
 {% endblock %}
@@ -72,9 +81,17 @@
     </div>
   </form>
   {% endif %}
+  <div class="category-progress-list">
   {% for r in rows %}
-    <div class="bar-row"><input type="checkbox" name="selected_categories" value="{{ r.category }}" form="bulkCategories" class="category-check" aria-label="เลือก {{ r.category }}"><span>{{ r.category }}</span><div class="bar-track"><div class="bar-fill" style="width:{{ r.pct }}%"></div></div><span class="num">฿ {{ "{:,.0f}".format(r.spent) }} / {{ "{:,.0f}".format(r.budget) if r.budget else '-' }}</span>{% if r.budget %}<button type="button" class="btn small edit-budget" data-category="{{ r.category|e }}" data-budget="{{ r.budget }}">✏️ แก้ไข</button>{% endif %}</div>
+    <div class="category-progress-item">
+      <input type="checkbox" name="selected_categories" value="{{ r.category }}" form="bulkCategories" class="category-check" aria-label="เลือก {{ r.category }}">
+      <span class="category-progress-name">{{ r.category }}</span>
+      <div class="category-progress-track" aria-label="ความคืบหน้า {{ r.pct }} เปอร์เซ็นต์"><div class="bar-fill" style="width:{{ r.pct }}%"></div></div>
+      <span class="category-progress-amount"><strong>฿ {{ "{:,.0f}".format(r.spent) }}</strong>{% if r.budget %}<small>จากงบ ฿ {{ "{:,.0f}".format(r.budget) }}</small>{% endif %}</span>
+      {% if r.budget %}<button type="button" class="btn small edit-budget" data-category="{{ r.category|e }}" data-budget="{{ r.budget }}">✏️ แก้ไข</button>{% endif %}
+    </div>
   {% else %}<p class="note">ยังไม่มีข้อมูล</p>{% endfor %}
+  </div>
 </section>
 <script>
 document.getElementById('selectAllCategories')?.addEventListener('change', function(){document.querySelectorAll('.category-check').forEach(x=>x.checked=this.checked)});

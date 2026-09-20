@@ -95,20 +95,22 @@ def _summaries(user):
     total_target = sum(_money(goal.get("target")) for goal in user_goals)
     percent = int(min(100, total_saved * 100 / total_target)) if total_target else 0
 
-    if percent >= 81:
+    if percent >= 100:
+        level, level_name, next_percent = 6, "ตำนาน", 100
+    elif percent >= 81:
         level, level_name, next_percent = 5, "แชมป์", 100
     elif percent >= 51:
         level, level_name, next_percent = 4, "นักสู้", 81
     elif percent >= 31:
         level, level_name, next_percent = 3, "มุ่งมั่น", 51
     elif percent >= 11:
-        level, level_name, next_percent = 2, "สดใส", 31
+        level, level_name, next_percent = 2, "ตั้งใจ", 31
     else:
         level, level_name, next_percent = 1, "เริ่มต้น", 11
 
     completed = bool(total_target and total_saved >= total_target)
     if completed:
-        percent, level, level_name, next_percent = 100, 5, "แชมป์", 100
+        percent, level, level_name, next_percent = 100, 6, "ตำนาน", 100
     next_amount = total_target * next_percent / 100 if total_target else 0.0
     amount_to_next = max(0.0, next_amount - total_saved)
 
@@ -121,7 +123,7 @@ def _summaries(user):
         "percent": percent,
         "level": level,
         "level_name": level_name,
-        "mate_image": "mate-level-{}.svg".format(level),
+        "mate_image": "mate-level-{}.png".format(level),
         "next_percent": next_percent,
         "next_level_amount": next_amount,
         "next_level_display": "{:,.2f}".format(next_amount),
@@ -142,7 +144,7 @@ def _summaries(user):
     }
     sidebar = dict(savings)
     sidebar["saved_display"] = savings["total_display"]
-    sidebar["next_level"] = min(5, level + 1)
+    sidebar["next_level"] = min(6, level + 1)
     return savings, dashboard, sidebar
 
 

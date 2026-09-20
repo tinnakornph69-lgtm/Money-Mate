@@ -1,0 +1,132 @@
+{% extends "_money_base.html" %}
+
+{% block head %}
+<style>
+.guide-shell{--guide-red:#92243a;--guide-pink:#fff0ed;--guide-ink:#24334a;color:var(--guide-ink);padding-bottom:28px}
+.guide-hero{position:relative;overflow:hidden;padding:clamp(26px,5vw,52px);border:1px solid #f0d8cf;border-radius:24px;background:linear-gradient(135deg,#fffaf7,#ffece4);box-shadow:0 16px 40px rgba(103,37,42,.08)}
+.guide-hero:after{content:"?";position:absolute;right:4%;top:-44px;color:rgba(146,36,58,.07);font-size:230px;font-weight:900;line-height:1}
+.guide-hero>*{position:relative;z-index:1}.guide-kicker{margin:0 0 7px;color:#d42f53;font-size:14px;font-weight:800;letter-spacing:.08em}.guide-hero h1{margin:0;color:#7c1d2c;font-size:clamp(30px,4.5vw,52px);line-height:1.15}.guide-hero p{max-width:760px;margin:14px 0 0;color:#586579;font-size:16px;line-height:1.75}
+.guide-start{display:flex;flex-wrap:wrap;gap:10px;margin-top:22px}.guide-start a,.guide-open{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:42px;padding:9px 16px;border-radius:12px;background:var(--guide-red);color:#fff;text-decoration:none;font-weight:800;box-shadow:0 8px 18px rgba(146,36,58,.18)}.guide-start a:nth-child(2){border:1px solid #dfb9b1;background:#fff;color:var(--guide-red);box-shadow:none}
+.guide-tools{position:sticky;top:76px;z-index:5;margin:18px 0;padding:12px;border:1px solid #eaded9;border-radius:16px;background:rgba(255,255,255,.94);box-shadow:0 10px 25px rgba(49,35,36,.07);backdrop-filter:blur(8px)}.guide-search{width:100%;padding:12px 15px;border:1px solid #d8dfe8;border-radius:11px;font:inherit;color:inherit}.guide-search:focus{outline:0;border-color:#b53246;box-shadow:0 0 0 3px rgba(181,50,70,.12)}
+.guide-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}.guide-card{scroll-margin-top:150px;overflow:hidden;border:1px solid #eaded9;border-radius:18px;background:#fff;box-shadow:0 10px 26px rgba(56,37,37,.06)}.guide-card[hidden]{display:none}.guide-card-head{display:flex;align-items:center;gap:12px;padding:18px 20px;background:linear-gradient(135deg,#fff,#fff6f2)}.guide-icon{display:grid;place-items:center;flex:0 0 46px;width:46px;height:46px;border-radius:14px;background:var(--guide-pink);font-size:24px}.guide-card h2{margin:0;color:#7c1d2c;font-size:20px}.guide-card-head small{display:block;margin-top:2px;color:#7b8798}.guide-body{padding:0 20px 20px}.guide-body h3{margin:16px 0 7px;font-size:15px;color:#263a55}.guide-body ol,.guide-body ul{margin:7px 0;padding-left:22px;line-height:1.75}.guide-note{margin:13px 0 0;padding:11px 13px;border-left:4px solid #eda52c;border-radius:8px;background:#fff9e8;color:#695124;font-size:14px;line-height:1.6}.guide-open{margin-top:13px;min-height:38px;padding:7px 13px;font-size:14px}.guide-empty{display:none;padding:32px;text-align:center;border:1px dashed #d7c5bf;border-radius:16px;background:#fff;color:#6c7787}.guide-empty.show{display:block}
+.guide-flow{margin-top:18px;padding:20px;border:1px solid #eaded9;border-radius:18px;background:#fff}.guide-flow h2{margin:0 0 14px;color:#7c1d2c}.guide-flow ol{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;list-style:none;padding:0;margin:0;counter-reset:flow}.guide-flow li{position:relative;padding:14px 10px;border-radius:12px;background:#fff4ef;text-align:center;font-weight:700;counter-increment:flow}.guide-flow li:before{content:counter(flow);display:grid;place-items:center;width:25px;height:25px;margin:0 auto 6px;border-radius:50%;background:var(--guide-red);color:#fff;font-size:13px}.guide-flow li:not(:last-child):after{content:"›";position:absolute;right:-9px;top:31%;z-index:1;color:#c52a49;font-size:25px}
+@media(max-width:800px){.guide-grid{grid-template-columns:1fr}.guide-tools{top:68px}.guide-flow ol{grid-template-columns:1fr}.guide-flow li:not(:last-child):after{content:"⌄";right:50%;top:auto;bottom:-16px}.guide-hero:after{font-size:160px}}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="guide-shell">
+  <section class="guide-hero">
+    <p class="guide-kicker">MONEYMATE USER GUIDE</p>
+    <h1>คู่มือการใช้งาน MoneyMate</h1>
+    <p>อธิบายการใช้งานทุกหน้าตั้งแต่สมัครสมาชิก บันทึกรายรับ–รายจ่าย วิเคราะห์ข้อมูล วางแผนเงินออม จนถึงการจัดการบัญชี เลือกหัวข้อด้านล่างแล้วทำตามขั้นตอนได้ทันที</p>
+    <div class="guide-start">
+      <a href="#guide-page1">เริ่มจากสมัครสมาชิก</a>
+      <a href="#guide-workflow">ดูขั้นตอนแนะนำ</a>
+    </div>
+  </section>
+
+  <div class="guide-tools">
+    <label for="guideSearch" class="sr-only">ค้นหาในคู่มือ</label>
+    <input id="guideSearch" class="guide-search" type="search" placeholder="ค้นหา เช่น รายรับ, เงินออม, เปลี่ยนรหัสผ่าน..." autocomplete="off">
+  </div>
+
+  <section class="guide-grid" id="guideGrid">
+    <article class="guide-card" id="guide-home" data-search="หน้าแรก home ภาพรวม เมนูด่วน พัฒนาการ mate">
+      <div class="guide-card-head"><span class="guide-icon">🏠</span><div><h2>หน้าแรก</h2><small>ภาพรวมและเมนูทางลัด</small></div></div>
+      <div class="guide-body"><h3>มีอะไรในหน้านี้</h3><ul><li>ก่อนเข้าสู่ระบบจะแนะนำความสามารถของ MoneyMate</li><li>หลังเข้าสู่ระบบจะแสดงยอดคงเหลือ รายรับ รายจ่าย และยอดออมของบัญชีคุณ</li><li>เมนูใช้งานด่วนและพัฒนาการของน้อง Mate เชื่อมกับข้อมูลเงินจริงที่บันทึกไว้</li></ul><h3>วิธีใช้</h3><ol><li>เข้าสู่ระบบก่อนเพื่อดูข้อมูลส่วนตัว</li><li>กดการ์ดเมนูด่วนเพื่อไปยังฟังก์ชันที่ต้องการ</li><li>กดโลโก้ MoneyMate หรือ “หน้าแรก” ใน Sidebar เพื่อกลับมาหน้านี้</li></ol><a class="guide-open" href="{{ url_for('home') }}">เปิดหน้าแรก →</a></div>
+    </article>
+
+    <article class="guide-card" id="guide-page1" data-search="เข้าสู่ระบบ สมัครสมาชิก บัญชี username รหัสผ่าน เปลี่ยนรหัส ออกจากระบบ">
+      <div class="guide-card-head"><span class="guide-icon">🔐</span><div><h2>เข้าสู่ระบบและบัญชี</h2><small>สมัครสมาชิก เข้าสู่ระบบ และเปลี่ยนรหัสผ่าน</small></div></div>
+      <div class="guide-body"><h3>สมัครสมาชิก</h3><ol><li>กด “เข้าสู่ระบบ” แล้วเลือก “สมัครสมาชิก”</li><li>กรอกชื่อผู้ใช้อย่างน้อย 3 ตัว และรหัสผ่านอย่างน้อย 6 ตัว</li><li>ยืนยันรหัสผ่านแล้วกด “สร้างบัญชี”</li></ol><h3>เปลี่ยนรหัสผ่าน</h3><ol><li>เปิดหมวด “บัญชี” ใน Sidebar แล้วกดชื่อผู้ใช้</li><li>กรอกรหัสเดิม รหัสใหม่ และยืนยันรหัสใหม่</li><li>กดบันทึก จากนั้นใช้รหัสใหม่ในการเข้าสู่ระบบครั้งถัดไป</li></ol><div class="guide-note">อย่าใช้รหัสผ่านที่เดาง่าย และอย่าเปิดเผยรหัสผ่านให้ผู้อื่น</div><a class="guide-open" href="{{ url_for('page', name='page1', view='profile') if current_user else url_for('page', name='page1') }}">เปิดหน้าบัญชี →</a></div>
+    </article>
+
+    <article class="guide-card" id="guide-page2" data-search="dashboard แดชบอร์ด ภาพรวม ยอดคงเหลือ รายรับ รายจ่าย หมวดหมู่ กราฟ">
+      <div class="guide-card-head"><span class="guide-icon">📊</span><div><h2>Dashboard</h2><small>ภาพรวมการเงินทั้งหมด</small></div></div>
+      <div class="guide-body"><h3>มีอะไรในหน้านี้</h3><ul><li>ยอดรายรับ รายจ่าย คงเหลือ และจำนวนรายการ</li><li>สรุปข้อมูลของเดือนปัจจุบัน</li><li>สัดส่วนรายรับและรายจ่ายแยกตามหมวดหมู่</li></ul><h3>วิธีใช้</h3><ol><li>บันทึกรายการในหน้ารายรับ–รายจ่ายก่อน</li><li>เปิด Dashboard เพื่อดูยอดรวมและเปรียบเทียบหมวดหมู่</li><li>ใช้ข้อมูลนี้ตรวจว่ารายจ่ายส่วนใดสูงผิดปกติ</li></ol><a class="guide-open" href="{{ url_for('page', name='page2') }}">เปิด Dashboard →</a></div>
+    </article>
+
+    <article class="guide-card" id="guide-page3" data-search="รายรับ รายจ่าย ธุรกรรม เพิ่ม แก้ไข ลบ ค้นหา กรอง รายรับประจำ recurring">
+      <div class="guide-card-head"><span class="guide-icon">💸</span><div><h2>รายรับ–รายจ่าย</h2><small>บันทึกและจัดการธุรกรรม</small></div></div>
+      <div class="guide-body"><h3>เพิ่มรายการ</h3><ol><li>เลือกประเภท “รายรับ” หรือ “รายจ่าย”</li><li>กรอกชื่อ จำนวนเงิน หมวดหมู่ และวันที่</li><li>กดบันทึก รายการจะเชื่อมไปยัง Dashboard และหน้าวิเคราะห์</li></ol><h3>เครื่องมือเพิ่มเติม</h3><ul><li>ค้นหาและกรองรายการตามประเภทหรือช่วงเวลา</li><li>แก้ไขหรือลบรายการที่บันทึกผิด</li><li>ตั้งรายรับประจำเพื่อให้ระบบเพิ่มรายการตามรอบที่กำหนด</li></ul><div class="guide-note">ตรวจประเภทและจำนวนเงินก่อนบันทึก เพราะข้อมูลหน้านี้ใช้คำนวณทุกหน้าทางการเงิน</div><a class="guide-open" href="{{ url_for('page', name='page3') }}">เปิดรายรับ–รายจ่าย →</a></div>
+    </article>
+
+    <article class="guide-card" id="guide-page8" data-search="smart input บันทึกอัจฉริยะ ภาษาคน ข้อความ รายการเร็ว">
+      <div class="guide-card-head"><span class="guide-icon">✨</span><div><h2>Smart Input</h2><small>เพิ่มรายการด้วยข้อความสั้น ๆ</small></div></div>
+      <div class="guide-body"><h3>วิธีใช้</h3><ol><li>พิมพ์ข้อความ เช่น “ข้าวกลางวัน 50 บาท” หรือ “ได้เงินเดือน 15000”</li><li>เลือกประเภทและหมวดหมู่ให้ตรงกับรายการ</li><li>ตรวจชื่อรายการและจำนวนเงินที่ระบบแยกให้</li><li>กดบันทึก รายการจะถูกส่งไปยังหน้ารายรับ–รายจ่าย</li></ol><div class="guide-note">ถ้ามีตัวเลขหลายจำนวน ให้ตรวจยอดที่ระบบเลือกก่อนกดบันทึก</div><a class="guide-open" href="{{ url_for('page', name='page8') }}">เปิด Smart Input →</a></div>
+    </article>
+
+    <article class="guide-card" id="guide-page4" data-search="วิเคราะห์การเงิน กราฟ หกเดือน แนวโน้ม พฤติกรรม ค่าใช้จ่าย">
+      <div class="guide-card-head"><span class="guide-icon">📈</span><div><h2>วิเคราะห์การเงิน</h2><small>ดูแนวโน้มและพฤติกรรมการใช้เงิน</small></div></div>
+      <div class="guide-body"><h3>มีอะไรในหน้านี้</h3><ul><li>เปรียบเทียบรายรับและรายจ่ายย้อนหลัง</li><li>ดูแนวโน้มยอดคงเหลือและหมวดค่าใช้จ่าย</li><li>ช่วยค้นหาช่วงเวลาที่ใช้เงินมากกว่าปกติ</li></ul><h3>วิธีใช้</h3><ol><li>บันทึกข้อมูลให้ต่อเนื่องเพื่อให้กราฟแม่นยำ</li><li>เปรียบเทียบแท่งรายรับกับรายจ่ายในแต่ละเดือน</li><li>นำหมวดที่สูงที่สุดไปปรับแผนการใช้เงิน</li></ol><a class="guide-open" href="{{ url_for('page', name='page4') }}">เปิดหน้าวิเคราะห์ →</a></div>
+    </article>
+
+    <article class="guide-card" id="guide-page5" data-search="smart output คำแนะนำ คะแนน สุขภาพการเงิน แจ้งเตือน คาดการณ์">
+      <div class="guide-card-head"><span class="guide-icon">💡</span><div><h2>Smart Output</h2><small>คำแนะนำและสรุปอัตโนมัติ</small></div></div>
+      <div class="guide-body"><h3>ระบบแสดงอะไร</h3><ul><li>คะแนนสุขภาพการเงินจากรายรับและรายจ่ายเดือนนี้</li><li>คำเตือนเมื่อรายจ่ายสูงหรือมากกว่ารายรับ</li><li>หมวดที่ใช้เงินมากที่สุดและวงเงินแนะนำต่อวัน</li><li>ประมาณการเงินคงเหลือเมื่อสิ้นเดือน</li></ul><h3>วิธีใช้</h3><ol><li>ตรวจคำเตือนที่แสดงด้านบน</li><li>อ่านคำแนะนำแล้วเลือกข้อที่ทำได้จริง</li><li>กลับไปปรับงบประมาณหรือรายการใช้จ่ายตามผลวิเคราะห์</li></ol><a class="guide-open" href="{{ url_for('page', name='page5') }}">เปิด Smart Output →</a></div>
+    </article>
+
+    <article class="guide-card" id="guide-page9" data-search="รายงาน สรุป รายเดือน หมวดหมู่ ตาราง ดาวน์โหลด พิมพ์">
+      <div class="guide-card-head"><span class="guide-icon">📄</span><div><h2>รายงาน</h2><small>สรุปผลการเงินเป็นภาพรวม</small></div></div>
+      <div class="guide-body"><h3>มีอะไรในหน้านี้</h3><ul><li>รายงานรายรับ รายจ่าย และคงเหลือแยกตามเดือน</li><li>สรุปค่าใช้จ่ายตามหมวดหมู่</li><li>ข้อมูลสำหรับทบทวนหรือใช้ประกอบการวางแผน</li></ul><h3>วิธีใช้</h3><ol><li>เลือกดูเดือนหรือช่วงข้อมูลที่ต้องการ</li><li>ตรวจยอดรวมกับรายการจริง</li><li>ใช้รายงานเปรียบเทียบผลกับเป้าหมายและงบที่ตั้งไว้</li></ol><a class="guide-open" href="{{ url_for('page', name='page9') }}">เปิดรายงาน →</a></div>
+    </article>
+
+    <article class="guide-card" id="guide-page7" data-search="ตั้งเป้าหมาย เงินออม เป้าหมาย เพิ่มเงินออม ออมอัตโนมัติ mate level">
+      <div class="guide-card-head"><span class="guide-icon">🎯</span><div><h2>เป้าหมายและเงินออม</h2><small>สร้างเป้าหมายและติดตามความสำเร็จ</small></div></div>
+      <div class="guide-body"><h3>สร้างเป้าหมาย</h3><ol><li>กรอกชื่อเป้าหมาย จำนวนเงิน และวันที่กำหนด</li><li>กดสร้างเป้าหมาย</li><li>กรอกจำนวนเงินแล้วกด “เพิ่มเงินออม” ทุกครั้งที่ออม</li></ol><h3>ออมอัตโนมัติ</h3><ul><li>กำหนดจำนวนเงินต่อรอบและเปิดการออมอัตโนมัติ</li><li>แก้ไขจำนวนเงินต่อรอบหรือปิดระบบได้ภายหลัง</li><li>เปอร์เซ็นต์ความสำเร็จและร่างของน้อง Mate จะเปลี่ยนตามยอดออม</li></ul><div class="guide-note">ยอดออมจะนับเฉพาะบัญชีที่กำลังเข้าสู่ระบบ และไม่ควรกรอกจำนวนติดลบ</div><a class="guide-open" href="{{ url_for('page', name='page7') }}">เปิดเป้าหมายของฉัน →</a></div>
+    </article>
+
+    <article class="guide-card" id="guide-page6" data-search="แผนการใช้เงิน งบประมาณ budget รายวัน สัปดาห์ เดือน ปี หมวดหมู่">
+      <div class="guide-card-head"><span class="guide-icon">🗓️</span><div><h2>แผนการใช้เงิน</h2><small>กำหนดงบประมาณตามช่วงเวลา</small></div></div>
+      <div class="guide-body"><h3>วิธีใช้</h3><ol><li>เลือกช่วงงบ: รายวัน รายสัปดาห์ รายเดือน หรือรายปี</li><li>เลือกหมวดหมู่และกำหนดวงเงิน</li><li>กดบันทึกแผน</li><li>ระบบจะเทียบรายจ่ายจริงในหมวดนั้นกับงบที่ตั้งไว้</li></ol><h3>การอ่านผล</h3><ul><li>แถบความคืบหน้าบอกสัดส่วนงบที่ใช้แล้ว</li><li>เมื่อใกล้เต็มควรลดรายจ่ายหรือปรับวงเงินอย่างมีเหตุผล</li></ul><a class="guide-open" href="{{ url_for('page', name='page6') }}">เปิดแผนการใช้เงิน →</a></div>
+    </article>
+
+    <article class="guide-card" id="guide-page11" data-search="if simulator จำลองสถานการณ์ รายรับ รายจ่าย ค่าใช้จ่ายเพิ่ม เงินเหลือ">
+      <div class="guide-card-head"><span class="guide-icon">🧮</span><div><h2>IF Simulator</h2><small>ทดลองสถานการณ์ก่อนตัดสินใจใช้เงิน</small></div></div>
+      <div class="guide-body"><h3>วิธีใช้</h3><ol><li>กรอกรายรับและรายจ่ายที่คาดไว้</li><li>กรอกค่าใช้จ่ายเพิ่มเติมที่ต้องการทดลอง</li><li>กดคำนวณเพื่อดูเงินคงเหลือหลังสถานการณ์สมมติ</li><li>เปลี่ยนตัวเลขแล้วทดลองเปรียบเทียบได้หลายครั้ง</li></ol><div class="guide-note">หน้านี้เป็นเพียงการจำลอง ไม่ได้บันทึกรายการลงบัญชีจริง</div><a class="guide-open" href="{{ url_for('page', name='page11') }}">เปิด IF Simulator →</a></div>
+    </article>
+
+    <article class="guide-card" id="guide-team" data-search="ทีมผู้จัดทำ เกี่ยวกับเรา สมาชิก ติดต่อ ผู้พัฒนา">
+      <div class="guide-card-head"><span class="guide-icon">👥</span><div><h2>ทีมผู้จัดทำ</h2><small>ข้อมูลโครงงานและสมาชิกทีม</small></div></div>
+      <div class="guide-body"><h3>มีอะไรในหน้านี้</h3><ul><li>ชื่อโครงงาน กลุ่ม และรายวิชา</li><li>รายชื่อสมาชิก บทบาท และงานที่รับผิดชอบ</li><li>ข้อมูลเกี่ยวกับการพัฒนา MoneyMate</li></ul><a class="guide-open" href="{{ url_for('page', name='team') }}">เปิดหน้าทีมผู้จัดทำ →</a></div>
+    </article>
+
+    {% if is_admin %}
+    <article class="guide-card" id="guide-page10" data-search="admin ผู้ดูแลระบบ ผู้ใช้ ออนไลน์ สถิติ ธุรกรรม">
+      <div class="guide-card-head"><span class="guide-icon">🛡️</span><div><h2>หน้าผู้ดูแลระบบ</h2><small>สำหรับบัญชี Admin เท่านั้น</small></div></div>
+      <div class="guide-body"><h3>มีอะไรในหน้านี้</h3><ul><li>จำนวนผู้ใช้และผู้ที่กำลังใช้งาน</li><li>จำนวนการเข้าชมและรายการธุรกรรม</li><li>ยอดรายรับ รายจ่าย และคงเหลือรวมในระบบ</li></ul><div class="guide-note">ข้อมูลหน้านี้จำกัดเฉพาะผู้ดูแลระบบ ผู้ใช้ทั่วไปจะไม่สามารถเปิดหน้าได้</div><a class="guide-open" href="{{ url_for('page', name='page10') }}">เปิดหน้า Admin →</a></div>
+    </article>
+    {% endif %}
+  </section>
+
+  <div class="guide-empty" id="guideEmpty">ไม่พบหัวข้อที่ค้นหา ลองใช้คำสั้น ๆ เช่น “ออม” หรือ “รายจ่าย”</div>
+
+  <section class="guide-flow" id="guide-workflow">
+    <h2>ลำดับการใช้งานที่แนะนำ</h2>
+    <ol><li>สมัครและเข้าสู่ระบบ</li><li>บันทึกรายรับ–รายจ่าย</li><li>ตั้งงบและเป้าหมายออม</li><li>ดู Dashboard และวิเคราะห์</li><li>ทบทวนคำแนะนำและรายงาน</li></ol>
+  </section>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  const input = document.getElementById('guideSearch');
+  const cards = Array.from(document.querySelectorAll('.guide-card'));
+  const empty = document.getElementById('guideEmpty');
+  if (!input) return;
+  input.addEventListener('input', function () {
+    const term = input.value.trim().toLocaleLowerCase('th');
+    let found = 0;
+    cards.forEach(function (card) {
+      const text = (card.textContent + ' ' + (card.dataset.search || '')).toLocaleLowerCase('th');
+      const show = !term || text.includes(term);
+      card.hidden = !show;
+      if (show) found += 1;
+    });
+    empty.classList.toggle('show', found === 0);
+  });
+});
+</script>
+{% endblock %}

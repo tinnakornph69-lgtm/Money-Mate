@@ -22,6 +22,7 @@
       </span>
     </a>
     <div class="header-account">
+      <a class="header-login" href="{{ url_for('page', name='guide') }}">คู่มือ</a>
       {% if current_user %}
         <span class="profile-trigger">👤 {{ current_user }}</span>
         <form method="post" action="{{ url_for('page', name='page1') }}" class="logout-form">
@@ -52,6 +53,12 @@
       <a href="{{ url_for('home') }}" class="mm-sidenav-link {{ 'active' if request.path == '/' }}">
         <span class="mm-sidenav-icon icon-home">⌂</span>
         <span class="mm-sidenav-label"><strong>หน้าแรก</strong><small>Home</small></span>
+        <span class="mm-link-arrow">›</span>
+      </a>
+
+      <a href="{{ url_for('page', name='guide') }}" class="mm-sidenav-link {{ 'active' if request.path == '/guide' }}">
+        <span class="mm-sidenav-icon icon-report">?</span>
+        <span class="mm-sidenav-label"><strong>คู่มือการใช้งาน</strong><small>วิธีใช้ทุกฟังก์ชัน</small></span>
         <span class="mm-link-arrow">›</span>
       </a>
 
@@ -94,13 +101,13 @@
 
     <section class="mm-side-mate" aria-label="พัฒนาการของน้อง Mate">
       <div class="mm-side-speech">“บันทึกวันนี้<br>เพื่ออนาคตที่ดีกว่า<br>ไปด้วยกันนะ!” ♥</div>
-      <img src="{{ url_for('static', filename='img/mate-login.png') }}" alt="น้อง Mate ถือหัวใจ">
+      <img src="{{ url_for('static', filename='img/' ~ sidebar_savings.mate_image) }}" onerror="this.src='{{ url_for('static', filename='img/mate-login.png') }}';" alt="น้อง Mate ระดับ {{ sidebar_savings.level }} {{ sidebar_savings.level_name }}">
       <div class="mm-side-level">
         <div class="mm-level-title"><span>⚡</span><strong>Lv.{{ sidebar_savings.level }} {{ sidebar_savings.level_name }}</strong><b>{{ sidebar_savings.percent }}%</b></div>
         <div class="mm-level-track"><i style="width: {{ sidebar_savings.percent }}%"></i></div>
-        {% if sidebar_savings.target_display != '0.00' and sidebar_savings.level < 5 %}
+        {% if sidebar_savings.target_display != '0.00' and sidebar_savings.level < 6 %}
           <small>อีก {{ sidebar_savings.amount_to_next_display }} บาท จะถึง Lv.{{ sidebar_savings.next_level }}</small>
-        {% elif sidebar_savings.level >= 5 %}
+        {% elif sidebar_savings.level >= 6 %}
           <small>ยอดเยี่ยม! คุณถึงระดับสูงสุดแล้ว</small>
         {% else %}
           <small>สร้างเป้าหมายเพื่อเริ่มพัฒนาน้อง Mate</small>
