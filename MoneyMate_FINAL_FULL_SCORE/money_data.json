@@ -1,1 +1,72 @@
-[]
+[
+  {
+    "id": "2f050a71f3541597",
+    "type": "income",
+    "amount": 50000.0,
+    "category": "งานเสริม",
+    "date": "2026-09-23",
+    "description": "",
+    "created_at": "2026-09-23T10:10:19",
+    "owner": "admin"
+  },
+  {
+    "id": "saving_goal_20260923101045915217_1790133086.030792",
+    "owner": "admin",
+    "type": "expense",
+    "amount": 550.0,
+    "category": "เงินออม",
+    "description": "ออมเงิน: ตีหรีี่่",
+    "date": "2026-09-23",
+    "source": "manual_saving"
+  },
+  {
+    "id": "saving_goal_20260923101045915217_1790133115.459435",
+    "owner": "admin",
+    "type": "expense",
+    "amount": 1000.0,
+    "category": "เงินออม",
+    "description": "ออมเงิน: ตีหรีี่่",
+    "date": "2026-09-23",
+    "source": "manual_saving"
+  },
+  {
+    "id": "saving_goal_20260923101045915217_1790133136.101844",
+    "owner": "admin",
+    "type": "expense",
+    "amount": 1000.0,
+    "category": "เงินออม",
+    "description": "ออมเงิน: ตีหรีี่่",
+    "date": "2026-09-23",
+    "source": "manual_saving"
+  },
+  {
+    "id": "saving_goal_20260923101045915217_1790133152.689181",
+    "owner": "admin",
+    "type": "expense",
+    "amount": 1000.0,
+    "category": "เงินออม",
+    "description": "ออมเงิน: ตีหรีี่่",
+    "date": "2026-09-23",
+    "source": "manual_saving"
+  },
+  {
+    "id": "saving_goal_20260923101045915217_1790133174.113093",
+    "owner": "admin",
+    "type": "expense",
+    "amount": 500.0,
+    "category": "เงินออม",
+    "description": "ออมเงิน: ตีหรีี่่",
+    "date": "2026-09-23",
+    "source": "manual_saving"
+  },
+  {
+    "id": "saving_goal_20260923101045915217_1790133190.347545",
+    "owner": "admin",
+    "type": "expense",
+    "amount": 950.0,
+    "category": "เงินออม",
+    "description": "ออมเงิน: ตีหรีี่่",
+    "date": "2026-09-23",
+    "source": "manual_saving"
+  }
+]
