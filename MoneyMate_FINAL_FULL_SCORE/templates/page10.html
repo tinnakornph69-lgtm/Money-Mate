@@ -1,56 +1,485 @@
 {% extends "_money_base.html" %}
 {% block content %}
-<div class="hero-box"><h1>🔐 Admin Dashboard</h1><p class="note">พื้นที่สรุปข้อมูลระบบสำหรับผู้ดูแล ไม่แสดงข้อมูลรับรองการเข้าสู่ระบบบนหน้าเว็บ</p></div>
-<div class="grid-3"><div class="stat"><div class="label">สมาชิก</div><div class="value">{{ users|length }}</div></div><div class="stat"><div class="label">กำลังใช้งาน</div><div class="value">{{ active }}</div></div><div class="stat gold"><div class="label">จำนวนผู้เข้าชมสะสม</div><div class="value">{{ visits }}</div></div></div>
-<div class="grid-3"><div class="stat"><div class="label">รายการทั้งหมด</div><div class="value">{{ transactions }}</div></div><div class="stat"><div class="label">รายรับรวม</div><div class="value">฿ {{ "{:,.2f}".format(income) }}</div></div><div class="stat"><div class="label">รายจ่ายรวม</div><div class="value">฿ {{ "{:,.2f}".format(expense) }}</div></div></div>
-<section class="card">
-  <h2>👥 สมาชิกที่ลงทะเบียน</h2>
-  <p class="note">เพื่อความปลอดภัย ระบบไม่สามารถเปิดดูรหัสเดิมที่ถูก hash ได้ ผู้ดูแลสามารถยืนยันรหัส Admin แล้วตั้งรหัสชั่วคราวให้ผู้ใช้แทน โดยผู้ใช้จะถูกบังคับให้เปลี่ยนรหัสหลังเข้าสู่ระบบ</p>
-  {% if users %}
-  <form id="adminBulkDelete" method="post" action="/page10" onsubmit="return confirmAdminDelete()">
-    <input type="hidden" name="action" value="bulk_delete_users">
-    <div class="bulk-toolbar">
-      <label><input type="checkbox" id="selectAllUsers"> เลือกทั้งหมด</label>
-      <button class="btn small danger" type="submit">🗑️ ลบบัญชีที่เลือก</button>
+
+<div class="hero-box">
+  <h1>🔐 Admin Dashboard</h1>
+  <p class="note">
+    พื้นที่สรุปข้อมูลระบบสำหรับผู้ดูแล
+    ไม่แสดงข้อมูลรับรองการเข้าสู่ระบบบนหน้าเว็บ
+  </p>
+</div>
+
+<div class="grid-3">
+  <div class="stat">
+    <div class="label">สมาชิก</div>
+    <div class="value" id="liveUserCount">{{ users|length }}</div>
+  </div>
+
+  <div class="stat">
+    <div class="label">กำลังใช้งาน</div>
+    <div class="value" id="liveActiveCount">{{ active }}</div>
+  </div>
+
+  <div class="stat gold">
+    <div class="label">จำนวนผู้เข้าชมสะสม</div>
+    <div class="value" id="liveVisitCount">{{ visits }}</div>
+  </div>
+</div>
+
+<div class="grid-3">
+  <div class="stat">
+    <div class="label">รายการทั้งหมด</div>
+    <div class="value" id="liveTransactionCount">{{ transactions }}</div>
+  </div>
+
+  <div class="stat">
+    <div class="label">รายรับรวม</div>
+    <div class="value" id="liveIncome">
+      ฿ {{ "{:,.2f}".format(income) }}
     </div>
-  </form>
-  <div class="table-wrap"><table>
-    <thead><tr><th class="bulk-check-col"></th><th>ชื่อผู้ใช้</th><th>วันที่สมัคร</th><th>จัดการรหัสผ่าน</th></tr></thead>
-    <tbody>{% for u in users %}
-      <tr>
-        <td class="bulk-check-col"><input class="admin-user-check" type="checkbox" name="selected_users" value="{{ u.username }}" form="adminBulkDelete" {% if u.username == current_user %}disabled title="ไม่สามารถลบบัญชีที่กำลังใช้งาน"{% endif %}></td>
-        <td>{{ u.username }}{% if u.username == current_user %} <span class="note">(บัญชีปัจจุบัน)</span>{% endif %}</td>
-        <td>{{ u.created_at }}</td>
-        <td>
-          <details class="admin-reset-box">
-            <summary>🔑 รีเซ็ตรหัสผ่าน</summary>
-            <form method="post" action="/page10" class="admin-reset-form">
-              <input type="hidden" name="action" value="reset_user_password">
-              <input type="hidden" name="username" value="{{ u.username }}">
-              <input type="password" name="admin_password" placeholder="รหัสผ่าน Admin" autocomplete="current-password" required>
-              <input type="password" name="temporary_password" minlength="8" placeholder="รหัสชั่วคราวใหม่ (8+ ตัว)" autocomplete="new-password" required>
-              <button class="btn small" type="submit" onclick="return confirm('ยืนยันรีเซ็ตรหัสผ่านของ {{ u.username }}?')">ยืนยันการรีเซ็ต</button>
-            </form>
-          </details>
-        </td>
-      </tr>
-    {% endfor %}</tbody>
-  </table></div>
-  {% else %}<p class="note">ยังไม่มีสมาชิก</p>{% endif %}
+  </div>
+
+  <div class="stat">
+    <div class="label">รายจ่ายรวม</div>
+    <div class="value" id="liveExpense">
+      ฿ {{ "{:,.2f}".format(expense) }}
+    </div>
+  </div>
+</div>
+
+<section class="card">
+
+  <div class="admin-live-heading">
+    <h2>👥 สมาชิกที่ลงทะเบียน</h2>
+
+    <span
+      class="admin-live-status"
+      id="adminLiveStatus"
+      aria-live="polite"
+    >
+      <span class="admin-live-dot"></span>
+      อัปเดตอัตโนมัติทุก 5 วินาที
+    </span>
+  </div>
+
+  <p class="note">
+    เพื่อความปลอดภัย ระบบไม่สามารถเปิดดูรหัสเดิมที่ถูก hash ได้
+    ผู้ดูแลสามารถยืนยันรหัส Admin แล้วตั้งรหัสชั่วคราวให้ผู้ใช้แทน
+    โดยผู้ใช้จะถูกบังคับให้เปลี่ยนรหัสหลังเข้าสู่ระบบ
+  </p>
+
+  <div id="membersRealtime">
+
+    {% if users %}
+
+    <form
+      id="adminBulkDelete"
+      method="post"
+      action="/page10"
+      onsubmit="return confirmAdminDelete()"
+    >
+      <input
+        type="hidden"
+        name="action"
+        value="bulk_delete_users"
+      >
+
+      <div class="bulk-toolbar">
+        <label>
+          <input type="checkbox" id="selectAllUsers">
+          เลือกทั้งหมด
+        </label>
+
+        <button
+          class="btn small danger"
+          type="submit"
+        >
+          🗑️ ลบบัญชีที่เลือก
+        </button>
+      </div>
+    </form>
+
+    <div class="table-wrap">
+      <table>
+
+        <thead>
+          <tr>
+            <th class="bulk-check-col"></th>
+            <th>ชื่อผู้ใช้</th>
+            <th>วันที่สมัคร</th>
+            <th>จัดการรหัสผ่าน</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {% for u in users %}
+
+          <tr class="admin-user-row">
+
+            <td class="bulk-check-col">
+              <input
+                class="admin-user-check"
+                type="checkbox"
+                name="selected_users"
+                value="{{ u.username }}"
+                form="adminBulkDelete"
+                {% if u.username == current_user %}
+                disabled
+                title="ไม่สามารถลบบัญชีที่กำลังใช้งาน"
+                {% endif %}
+              >
+            </td>
+
+            <td>
+              {{ u.username }}
+
+              {% if u.username == current_user %}
+              <span class="note">(บัญชีปัจจุบัน)</span>
+              {% endif %}
+            </td>
+
+            <td>{{ u.created_at }}</td>
+
+            <td>
+              <details class="admin-reset-box">
+
+                <summary>🔑 รีเซ็ตรหัสผ่าน</summary>
+
+                <form
+                  method="post"
+                  action="/page10"
+                  class="admin-reset-form"
+                >
+                  <input
+                    type="hidden"
+                    name="action"
+                    value="reset_user_password"
+                  >
+
+                  <input
+                    type="hidden"
+                    name="username"
+                    value="{{ u.username }}"
+                  >
+
+                  <input
+                    type="password"
+                    name="admin_password"
+                    placeholder="รหัสผ่าน Admin"
+                    autocomplete="current-password"
+                    required
+                  >
+
+                  <input
+                    type="password"
+                    name="temporary_password"
+                    minlength="8"
+                    placeholder="รหัสชั่วคราวใหม่ (8+ ตัว)"
+                    autocomplete="new-password"
+                    required
+                  >
+
+                  <button
+                    class="btn small"
+                    type="submit"
+                    onclick="return confirm('ยืนยันรีเซ็ตรหัสผ่านของ {{ u.username }}?')"
+                  >
+                    ยืนยันการรีเซ็ต
+                  </button>
+                </form>
+
+              </details>
+            </td>
+
+          </tr>
+
+          {% endfor %}
+        </tbody>
+
+      </table>
+    </div>
+
+    {% else %}
+
+    <p class="note">ยังไม่มีสมาชิก</p>
+
+    {% endif %}
+
+  </div>
 </section>
+
 <script>
-const adminSelectAll=document.getElementById('selectAllUsers');
-adminSelectAll?.addEventListener('change',function(){
-  document.querySelectorAll('.admin-user-check:not(:disabled)').forEach(box=>box.checked=this.checked);
-});
-function confirmAdminDelete(){
-  const selected=document.querySelectorAll('.admin-user-check:checked');
-  if(!selected.length){alert('กรุณาเลือกบัญชีอย่างน้อย 1 บัญชี');return false;}
-  return confirm('ยืนยันลบบัญชีที่เลือก? ข้อมูลธุรกรรม งบประมาณ เป้าหมาย และข้อมูลของบัญชีนั้นจะถูกลบด้วย');
-}
+(function () {
+  const POLL_INTERVAL = 5000;
+  let polling = false;
+
+  function memberSignature(root) {
+    if (!root) {
+      return "";
+    }
+
+    const rows = root.querySelectorAll(".admin-user-row");
+
+    if (!rows.length) {
+      return root.textContent.trim();
+    }
+
+    return Array.from(rows).map(function (row) {
+      const cells = row.querySelectorAll("td");
+
+      const username =
+        cells[1] ? cells[1].textContent.trim() : "";
+
+      const createdAt =
+        cells[2] ? cells[2].textContent.trim() : "";
+
+      return username + "|" + createdAt;
+    }).join("\n");
+  }
+
+  function isEditingMembers() {
+    const root =
+      document.getElementById("membersRealtime");
+
+    if (!root) {
+      return false;
+    }
+
+    const selected =
+      root.querySelector(
+        ".admin-user-check:checked, .admin-reset-box[open]"
+      );
+
+    const activeElement =
+      document.activeElement;
+
+    const editingInput =
+      root.contains(activeElement) &&
+      ["INPUT", "BUTTON", "SELECT", "TEXTAREA"]
+        .includes(activeElement.tagName);
+
+    return Boolean(selected || editingInput);
+  }
+
+  function copyText(source, targetId) {
+    const target =
+      document.getElementById(targetId);
+
+    const fresh =
+      source.getElementById(targetId);
+
+    if (target && fresh) {
+      target.textContent = fresh.textContent;
+    }
+  }
+
+  async function refreshAdminData() {
+    if (polling || document.hidden) {
+      return;
+    }
+
+    polling = true;
+
+    const status =
+      document.getElementById("adminLiveStatus");
+
+    try {
+      const response = await fetch(
+        "/page10?live=1&_=" + Date.now(),
+        {
+          method: "GET",
+          credentials: "same-origin",
+          cache: "no-store",
+          headers: {
+            "X-Requested-With": "MoneyMate-Live"
+          }
+        }
+      );
+
+      if (
+        !response.ok ||
+        !response.url.includes("/page10")
+      ) {
+        throw new Error("session");
+      }
+
+      const html =
+        await response.text();
+
+      const freshDocument =
+        new DOMParser().parseFromString(
+          html,
+          "text/html"
+        );
+
+      copyText(freshDocument, "liveUserCount");
+      copyText(freshDocument, "liveActiveCount");
+      copyText(freshDocument, "liveVisitCount");
+      copyText(freshDocument, "liveTransactionCount");
+      copyText(freshDocument, "liveIncome");
+      copyText(freshDocument, "liveExpense");
+
+      const currentMembers =
+        document.getElementById("membersRealtime");
+
+      const freshMembers =
+        freshDocument.getElementById(
+          "membersRealtime"
+        );
+
+      if (
+        currentMembers &&
+        freshMembers &&
+        !isEditingMembers() &&
+        memberSignature(currentMembers) !==
+          memberSignature(freshMembers)
+      ) {
+        currentMembers.innerHTML =
+          freshMembers.innerHTML;
+      }
+
+      if (status) {
+        status.classList.remove("is-offline");
+      }
+
+    } catch (error) {
+      if (status) {
+        status.classList.add("is-offline");
+      }
+
+    } finally {
+      polling = false;
+    }
+  }
+
+  document.addEventListener(
+    "change",
+    function (event) {
+      if (event.target.id === "selectAllUsers") {
+        document
+          .querySelectorAll(
+            ".admin-user-check:not(:disabled)"
+          )
+          .forEach(function (box) {
+            box.checked = event.target.checked;
+          });
+      }
+    }
+  );
+
+  document.addEventListener(
+    "visibilitychange",
+    function () {
+      if (!document.hidden) {
+        refreshAdminData();
+      }
+    }
+  );
+
+  window.confirmAdminDelete = function () {
+    const selected =
+      document.querySelectorAll(
+        ".admin-user-check:checked"
+      );
+
+    if (!selected.length) {
+      alert(
+        "กรุณาเลือกบัญชีอย่างน้อย 1 บัญชี"
+      );
+
+      return false;
+    }
+
+    return confirm(
+      "ยืนยันลบบัญชีที่เลือก? " +
+      "ข้อมูลธุรกรรม งบประมาณ เป้าหมาย " +
+      "และข้อมูลของบัญชีนั้นจะถูกลบด้วย"
+    );
+  };
+
+  window.setInterval(
+    refreshAdminData,
+    POLL_INTERVAL
+  );
+})();
 </script>
+
 <style>
-.admin-reset-box summary{cursor:pointer;font-weight:700}.admin-reset-form{display:grid;gap:7px;margin-top:8px;min-width:220px}
-.admin-reset-form input{padding:8px 10px;border:1px solid var(--line);border-radius:9px;font:inherit}
+.admin-live-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.admin-live-heading h2 {
+  margin: 0;
+}
+
+.admin-live-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  color: #287a49;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.admin-live-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #2ebd68;
+  box-shadow:
+    0 0 0 5px rgba(46, 189, 104, .13);
+  animation:
+    admin-live-pulse 1.8s ease-in-out infinite;
+}
+
+.admin-live-status.is-offline {
+  color: #a12b3d;
+}
+
+.admin-live-status.is-offline
+.admin-live-dot {
+  background: #d94255;
+  box-shadow:
+    0 0 0 5px rgba(217, 66, 85, .13);
+  animation: none;
+}
+
+.admin-reset-box summary {
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.admin-reset-form {
+  display: grid;
+  gap: 7px;
+  margin-top: 8px;
+  min-width: 220px;
+}
+
+.admin-reset-form input {
+  padding: 8px 10px;
+  border: 1px solid var(--line);
+  border-radius: 9px;
+  font: inherit;
+}
+
+@keyframes admin-live-pulse {
+  50% {
+    opacity: .45;
+    transform: scale(.82);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .admin-live-dot {
+    animation: none;
+  }
+}
 </style>
+
 {% endblock %}
