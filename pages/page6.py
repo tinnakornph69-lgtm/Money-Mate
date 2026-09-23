@@ -1,5 +1,6 @@
 """MoneyMate flexible budget planner."""
 import os
+import math
 from datetime import date, timedelta
 from flask import has_request_context, session
 from persistent_store import read_json, write_json
@@ -15,6 +16,13 @@ PERIODS = {
     "monthly": "รายเดือน",
     "yearly": "รายปี",
 }
+
+def safe_amount(value):
+    try:
+        value = float(value or 0)
+    except (ValueError, TypeError):
+        return 0.0
+    return value if math.isfinite(value) and value > 0 else 0.0
 
 def read(path, default):
     return read_json(path, default)
@@ -100,18 +108,18 @@ def build(query=None):
     if period not in PERIODS:
         period = "monthly"
     key = current_period(period)
-    exp = sum(float(x.get("amount", 0)) for x in items
+    exp = sum(safe_amount(x.get("amount", 0)) for x in items
               if x.get("type") == "expense" and period_of_transaction(x.get("date",""), period) == key)
 
     cats = categories_for(items)
     cat_spend = {
-        c: sum(float(x.get("amount", 0)) for x in items
+        c: sum(safe_amount(x.get("amount", 0)) for x in items
                if x.get("type") == "expense"
                and period_of_transaction(x.get("date",""), period) == key
                and x.get("category") == c)
         for c in cats
     }
-    monthly = float(budget.get("budgets", {}).get(period, {}).get(key, 0))
+    monthly = safe_amount(budget.get("budgets", {}).get(period, {}).get(key, 0))
     category_bucket = budget.get("categories", {}).get(period, {}).get(key, {})
     if not isinstance(category_bucket, dict):
         category_bucket = {}
@@ -120,7 +128,7 @@ def build(query=None):
     cats = sorted(set(cats) | set(category_bucket.keys()))
     rows = []
     for c in cats:
-        b = float(category_bucket.get(c, 0) or 0)
+        b = safe_amount(category_bucket.get(c, 0))
         spent = cat_spend[c]
         pct = min(100, round(spent * 100 / b)) if b else 0
         rows.append({"category": c, "budget": b, "spent": spent, "pct": pct})
@@ -138,8 +146,17 @@ def build(query=None):
     }
 
 
-def _selected_values(form, name):
+def _selected_values(form, name, prefix=None):
     """อ่านค่าหลายค่าจาก checkbox ได้ทั้ง MultiDict และ dict ปกติ"""
+    # app.py แปลง request.form เป็น dict จึงใช้ชื่อ checkbox ไม่ซ้ำกัน
+    if prefix:
+        values = [
+            str(value).strip()
+            for key, value in form.items()
+            if str(key).startswith(prefix) and str(value).strip()
+        ]
+        if values:
+            return values
     if hasattr(form, "getlist"):
         return [str(v).strip() for v in form.getlist(name) if str(v).strip()]
     value = form.get(name, [])
@@ -165,7 +182,9 @@ def handle(form):
     key = current_period(period)
 
     if action == "bulk_delete_categories":
-        selected = set(_selected_values(form, "selected_categories"))
+        selected = set(_selected_values(
+            form, "selected_categories", "selected_category_"
+        ))
         if not selected:
             return "กรุณาเลือกงบหมวดที่ต้องการลบ"
         categories = budget.setdefault("categories", {}).setdefault(period, {}).setdefault(key, {})
@@ -183,8 +202,8 @@ def handle(form):
         value = float(form.get("amount", 0))
     except (ValueError, TypeError):
         return "จำนวนเงินไม่ถูกต้อง"
-    if value < 0:
-        return "จำนวนเงินไม่ถูกต้อง"
+    if not math.isfinite(value) or value <= 0:
+        return "จำนวนเงินต้องมากกว่า 0"
 
     if action == "budget":
         budget.setdefault("budgets", {}).setdefault(period, {})[key] = value

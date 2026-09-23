@@ -1,6 +1,7 @@
 """MoneyMate financial reports."""
 
 import os
+import math
 from collections import defaultdict
 
 from flask import session
@@ -19,9 +20,10 @@ def load():
 
 def safe_amount(value):
     try:
-        return float(value or 0)
+        value = float(value or 0)
     except (TypeError, ValueError):
         return 0.0
+    return value if math.isfinite(value) and value > 0 else 0.0
 
 
 def build(query=None):
@@ -56,13 +58,13 @@ def build(query=None):
             "month": month,
             "income": values["income"],
             "expense": values["expense"],
-            "saving": values["income"] - values["expense"],
+            "saving": max(0.0, values["income"] - values["expense"]),
         })
 
     total_income = sum(row["income"] for row in rows)
     total_expense = sum(row["expense"] for row in rows)
-    saving = total_income - total_expense
-    rate = round(saving * 100 / total_income, 1) if total_income else 0
+    saving = max(0.0, total_income - total_expense)
+    rate = round(max(0.0, min(100.0, saving * 100 / total_income)), 1) if total_income else 0
 
     return {
         "rows": rows,

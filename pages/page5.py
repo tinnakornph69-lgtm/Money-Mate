@@ -1,5 +1,5 @@
 """MoneyMate smart financial insights."""
-import os, calendar
+import os, calendar, math
 from flask import session
 from collections import defaultdict
 from datetime import date
@@ -11,12 +11,19 @@ def load():
     data = read_json(FILE, [])
     return data if isinstance(data, list) else []
 
+def safe_amount(value):
+    try:
+        value = float(value or 0)
+    except (ValueError, TypeError):
+        return 0.0
+    return value if math.isfinite(value) and value > 0 else 0.0
+
 def build(query=None):
     items=load(); user=session.get("user"); items=[x for x in items if user and x.get("owner")==user]; today=date.today(); key=today.strftime("%Y-%m"); month=[x for x in items if str(x.get("date",""))[:7]==key]
-    inc=sum(float(x.get("amount",0)) for x in month if x.get("type")=="income"); exp=sum(float(x.get("amount",0)) for x in month if x.get("type")=="expense")
+    inc=sum(safe_amount(x.get("amount",0)) for x in month if x.get("type")=="income"); exp=sum(safe_amount(x.get("amount",0)) for x in month if x.get("type")=="expense")
     cats={}
     for x in month:
-        if x.get("type")=="expense": cats[x.get("category","อื่น ๆ")]=cats.get(x.get("category","อื่น ๆ"),0)+float(x.get("amount",0))
+        if x.get("type")=="expense": cats[x.get("category","อื่น ๆ")]=cats.get(x.get("category","อื่น ๆ"),0)+safe_amount(x.get("amount",0))
     rate=(inc-exp)/inc if inc else 0; score=round(max(0,min(100,50+rate*50))) if inc else 50
     days=today.day; remaining=max(1,calendar.monthrange(today.year,today.month)[1]-days+1); daily=max(0,(inc-exp)/remaining)
     tips=[]; alerts=[]
@@ -32,7 +39,7 @@ def build(query=None):
     historical=defaultdict(list)
     for x in items:
         if x.get("type")=="expense":
-            historical[x.get("category","อื่น ๆ")].append(float(x.get("amount",0)))
+            historical[x.get("category","อื่น ๆ")].append(safe_amount(x.get("amount",0)))
     for category, current in cats.items():
         history=historical.get(category,[])
         if len(history)>=3:

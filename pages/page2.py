@@ -1,5 +1,6 @@
 """MoneyMate dashboard."""
 import os
+import math
 from flask import session
 from datetime import date
 from persistent_store import read_json
@@ -17,9 +18,10 @@ def load_transactions():
 
 def safe_amount(value):
     try:
-        return float(value or 0)
+        value = float(value or 0)
     except (TypeError, ValueError):
         return 0.0
+    return value if math.isfinite(value) and value > 0 else 0.0
 
 
 def make_breakdown(categories):

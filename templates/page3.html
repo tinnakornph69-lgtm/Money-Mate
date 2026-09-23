@@ -933,7 +933,7 @@
 
                 <tr>
 
-                    <td class="bulk-check-col"><input type="checkbox" name="selected_ids" value="{{ x.id }}" form="bulkTransactions" data-bulk-group="tx" aria-label="เลือกรายการ"></td>
+                    <td class="bulk-check-col"><input type="checkbox" name="selected_id_{{ loop.index0 }}" value="{{ x.id }}" form="bulkTransactions" data-bulk-group="tx" aria-label="เลือกรายการ"></td>
                     <td>
                         {{ x.date }}
                     </td>

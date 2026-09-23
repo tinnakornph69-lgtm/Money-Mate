@@ -1,5 +1,5 @@
 """MoneyMate Smart Input — natural-language transaction entry."""
-import os, re, secrets
+import os, re, secrets, math
 from datetime import datetime
 from flask import session
 from persistent_store import read_json, write_json
@@ -22,6 +22,25 @@ def load():
 
 def save(items):
     write_json(MONEY_FILE, items)
+
+def stored_amount(value):
+    try:
+        value = float(value or 0)
+    except (ValueError, TypeError):
+        return 0.0
+    return value if math.isfinite(value) and value > 0 else 0.0
+
+def current_balance(items, user):
+    total = 0.0
+    for item in items:
+        if item.get("owner") != user:
+            continue
+        value = stored_amount(item.get("amount"))
+        if item.get("type") == "income":
+            total += value
+        elif item.get("type") == "expense":
+            total -= value
+    return max(0.0, total)
 
 def parse_text(text):
     text = str(text or "").strip()
@@ -81,7 +100,7 @@ def handle(form):
             amount = float(form.get("amount", "0"))
         except (ValueError, TypeError):
             return "จำนวนเงินไม่ถูกต้อง"
-        if amount <= 0:
+        if not math.isfinite(amount) or amount <= 0:
             return "จำนวนเงินต้องมากกว่า 0"
         if not category:
             category = "อื่น ๆ"
@@ -89,6 +108,10 @@ def handle(form):
             tx_type = "expense"
 
         items = load()
+        if tx_type == "expense":
+            balance = current_balance(items, session.get("user"))
+            if amount > balance + 1e-9:
+                return f"ยอดเงินคงเหลือไม่เพียงพอ (คงเหลือ {balance:,.2f} บาท)"
         items.append({
             "id": secrets.token_hex(8),
             "type": tx_type,

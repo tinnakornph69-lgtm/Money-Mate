@@ -1,6 +1,7 @@
 """MoneyMate six-month financial analysis."""
 
 import os
+import math
 from collections import defaultdict
 from datetime import date
 
@@ -20,9 +21,10 @@ def load():
 
 def safe_amount(value):
     try:
-        return float(value or 0)
+        value = float(value or 0)
     except (TypeError, ValueError):
         return 0.0
+    return value if math.isfinite(value) and value > 0 else 0.0
 
 
 def build(query=None):
@@ -64,7 +66,7 @@ def build(query=None):
             "month": month,
             "income": income,
             "expense": expense,
-            "balance": income - expense,
+            "balance": max(0.0, income - expense),
         })
 
     top = sorted(categories.items(), key=lambda pair: pair[1], reverse=True)
@@ -89,7 +91,7 @@ def build(query=None):
     ]
 
     saving_rate = (
-        round((total_income - total_expense) * 100 / total_income, 1)
+        round(max(0.0, min(100.0, (total_income - total_expense) * 100 / total_income)), 1)
         if total_income else 0
     )
 

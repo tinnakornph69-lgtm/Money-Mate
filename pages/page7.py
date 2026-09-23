@@ -1,4 +1,5 @@
 import os
+import math
 from datetime import date, datetime, timedelta
 from flask import has_request_context, session
 from persistent_store import read_json, write_json
@@ -50,7 +51,8 @@ def money(value):
         if value == "":
             return None
 
-        return float(value)
+        value = float(value)
+        return value if math.isfinite(value) else None
 
     except (ValueError, TypeError):
         return None
@@ -147,7 +149,7 @@ def get_balance(user):
             item.get("amount")
         )
 
-        if amount is None:
+        if amount is None or amount <= 0:
             continue
 
         if item.get("type") == "income":
@@ -171,7 +173,7 @@ def get_balance_from_items(items, user):
             continue
 
         amount = money(item.get("amount"))
-        if amount is None:
+        if amount is None or amount <= 0:
             continue
 
         if item.get("type") == "income":
@@ -179,7 +181,7 @@ def get_balance_from_items(items, user):
         elif item.get("type") == "expense":
             balance -= amount
 
-    return balance
+    return max(0.0, balance)
 
 
 # =========================================================
@@ -778,6 +780,9 @@ def add_goal(form, user):
 
     if deadline and not valid_date(deadline):
         return "รูปแบบวันที่ไม่ถูกต้อง"
+
+    if deadline and date.fromisoformat(deadline) < date.today():
+        return "วันครบกำหนดต้องเป็นวันนี้หรือวันในอนาคต"
 
     # -----------------------------------------------------
     # Auto Save

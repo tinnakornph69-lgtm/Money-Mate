@@ -1,6 +1,7 @@
 """MoneyMate transaction manager + recurring income."""
 
 import os
+import math
 import secrets
 from calendar import monthrange
 from datetime import datetime, date, timedelta
@@ -71,17 +72,31 @@ def load_transactions():
 def save_transactions(items):
     write_json(DATA_FILE, items)
 
+
+def stored_amount(value):
+    """อ่านยอดที่บันทึกไว้โดยไม่ปล่อยค่าติดลบ/NaN/Infinity เข้าการคำนวณ"""
+    try:
+        value = float(value or 0)
+    except (ValueError, TypeError):
+        return 0.0
+    return value if math.isfinite(value) and value > 0 else 0.0
+
+
+def balance_from_items(items, user, exclude_id=None):
+    total = 0.0
+    for x in items:
+        if x.get("owner") != user or (exclude_id and x.get("id") == exclude_id):
+            continue
+        value = stored_amount(x.get("amount"))
+        if x.get("type") == "income":
+            total += value
+        elif x.get("type") == "expense":
+            total -= value
+    return total
+
 def current_balance(user, exclude_id=None):
     """ยอดเงินคงเหลือของผู้ใช้ ณ ตอนนี้ (ไม่รวมรายการที่ id ตรงกับ exclude_id ถ้ามี)"""
-    total = 0.0
-    for x in load_transactions():
-        if x.get("owner") != user:
-            continue
-        if exclude_id and x.get("id") == exclude_id:
-            continue
-        a = float(x.get("amount", 0) or 0)
-        total += a if x.get("type") == "income" else -a
-    return total
+    return max(0.0, balance_from_items(load_transactions(), user, exclude_id))
 
 
 def load_recurring():
@@ -97,7 +112,7 @@ def amount(value):
     try:
         x = float(value)
 
-        if x <= 0:
+        if not math.isfinite(x) or x <= 0:
             return None
 
         return round(x, 2)
@@ -300,7 +315,7 @@ def process_due_recurring(user):
                 name = str(item.get("name", "รายรับประจำ"))
                 money.append({
                     "id": secrets.token_hex(8), "type": "income",
-                    "amount": float(item.get("amount", 0)),
+                    "amount": stored_amount(item.get("amount")),
                     "category": "เงินเดือน" if "เงินเดือน" in name else "รายรับประจำ",
                     "date": due.isoformat(), "description": name[:200],
                     "created_at": thai_now().isoformat(timespec="seconds"),
@@ -423,23 +438,13 @@ def build(query=None):
     )
 
     income = sum(
-        float(
-            x.get(
-                "amount",
-                0
-            )
-        )
+        stored_amount(x.get("amount"))
         for x in items
         if x.get("type") == "income"
     )
 
     expense = sum(
-        float(
-            x.get(
-                "amount",
-                0
-            )
-        )
+        stored_amount(x.get("amount"))
         for x in items
         if x.get("type") == "expense"
     )
@@ -459,7 +464,7 @@ def build(query=None):
 
         "total_income": income,
         "total_expense": expense,
-        "balance": income - expense,
+        "balance": max(0.0, income - expense),
 
         "search": query.get(
             "search",
@@ -480,8 +485,18 @@ def build(query=None):
 
 
 
-def _selected_values(form, name):
+def _selected_values(form, name, prefix=None):
     """อ่านค่าหลายค่าจาก checkbox ได้ทั้ง MultiDict และ dict ปกติ"""
+    # app.py แปลง request.form เป็น dict จึงห้ามใช้ชื่อ checkbox ซ้ำกัน
+    # หน้าเว็บจึงส่งชื่อแบบ selected_id_0, selected_id_1, ... มาแทน
+    if prefix:
+        values = [
+            str(value).strip()
+            for key, value in form.items()
+            if str(key).startswith(prefix) and str(value).strip()
+        ]
+        if values:
+            return values
     if hasattr(form, "getlist"):
         return [str(v).strip() for v in form.getlist(name) if str(v).strip()]
     value = form.get(name, [])
@@ -552,7 +567,7 @@ def handle(form):
     # ลบหลายรายการ — ตรวจ owner ทุกครั้ง
     # =====================================================
     if action == "bulk_delete":
-        selected = set(_selected_values(form, "selected_ids"))
+        selected = set(_selected_values(form, "selected_ids", "selected_id_"))
         if not selected:
             return "กรุณาเลือกรายการที่ต้องการลบ"
         items = load_transactions()
@@ -560,6 +575,8 @@ def handle(form):
         deleted = len(items) - len(kept)
         if not deleted:
             return "ไม่พบรายการที่ต้องการลบ"
+        if balance_from_items(kept, user) < -1e-9:
+            return "ลบไม่ได้ เพราะจะทำให้ยอดเงินจริงติดลบ กรุณาลดหรือลบรายจ่ายก่อน"
         save_transactions(kept)
         return f"ลบ {deleted} รายการเรียบร้อยแล้ว"
 
@@ -686,16 +703,19 @@ def handle(form):
             ):
 
                 # ตอนแก้ไข ให้คำนวณยอดโดยไม่นับรายการเดิมซ้ำ
-                if t == "expense":
-                    balance_without_old = current_balance(
-                        user,
-                        exclude_id=item_id
+                balance_without_old = balance_from_items(
+                    all_items, user, exclude_id=item_id
+                )
+                projected_balance = (
+                    balance_without_old + a
+                    if t == "income"
+                    else balance_without_old - a
+                )
+                if projected_balance < -1e-9:
+                    return (
+                        "แก้ไขไม่ได้ เพราะจะทำให้ยอดเงินจริงติดลบ "
+                        f"(ยอดที่ใช้ได้ {max(balance_without_old, 0):,.2f} บาท)"
                     )
-                    if a > balance_without_old + 1e-9:
-                        return (
-                            "ยอดเงินคงเหลือไม่เพียงพอ "
-                            f"(ใช้ได้สูงสุด {max(balance_without_old, 0):,.2f} บาท)"
-                        )
 
                 x.update({
                     "type": t,
@@ -737,6 +757,9 @@ def handle(form):
 
         if len(new_items) == len(all_items):
             return "ไม่พบรายการที่ต้องการลบ"
+
+        if balance_from_items(new_items, user) < -1e-9:
+            return "ลบไม่ได้ เพราะจะทำให้ยอดเงินจริงติดลบ กรุณาลดหรือลบรายจ่ายก่อน"
 
         save_transactions(
             new_items
